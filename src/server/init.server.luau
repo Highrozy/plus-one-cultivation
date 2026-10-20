@@ -7,6 +7,9 @@ local Services = script.Services
 local ORDER = {
 	"PlayerData",
 	"RealmService",
+	"LootService",
+	"BeastService",
+	"CombatService",
 	"ClickService",
 	"DebugService", -- Studio-only test shortcuts
 }

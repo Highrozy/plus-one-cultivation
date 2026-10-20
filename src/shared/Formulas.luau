@@ -50,6 +50,14 @@ function Formulas.QiPerClick(state: State): number
 	return Config.Click.BaseQi * Formulas.StageMultiplier(state.Stage)
 end
 
+function Formulas.PunchDamage(state: State): number
+	return state.Qi * Config.Combat.DamagePerQi
+end
+
+function Formulas.MaxHealth(stage: number): number
+	return math.floor(Config.Player.BaseHealth * Formulas.StageMultiplier(stage))
+end
+
 -- Total qi needed for the next stage, or nil at the final stage.
 function Formulas.NextStageQi(stage: number): number?
 	return Config.Realms.StageQi[stage + 1]

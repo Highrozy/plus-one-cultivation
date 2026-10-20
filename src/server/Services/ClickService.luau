@@ -1,5 +1,6 @@
 --!strict
--- ClickService: handles "I tapped" from the client. Every accepted tap gives qi.
+-- ClickService: handles "I tapped" from the client. Every accepted tap gives qi
+-- and punches the nearest beast in range (if the punch timer is ready).
 -- Taps beyond Config.Click.MaxPerSecond are ignored (basic auto-clicker guard).
 
 local Players = game:GetService("Players")
@@ -8,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Formulas = require(ReplicatedStorage.Shared.Formulas)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
+local CombatService = require(script.Parent.CombatService)
 local PlayerData = require(script.Parent.PlayerData)
 local RealmService = require(script.Parent.RealmService)
 
@@ -41,6 +43,7 @@ function ClickService.Init()
 			return
 		end
 		RealmService.AddQi(player, Formulas.QiPerClick(data))
+		CombatService.TryPunch(player)
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)

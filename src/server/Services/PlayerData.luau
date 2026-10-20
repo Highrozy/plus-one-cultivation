@@ -8,6 +8,8 @@ local Players = game:GetService("Players")
 export type Data = {
 	Qi: number, -- total qi ever gathered (stage requirements are totals)
 	Stage: number, -- 1 = Qi Condensation 1
+	SpiritStones: number,
+	BeastCores: number,
 }
 
 local PlayerData = {}
@@ -26,10 +28,12 @@ function PlayerData.Sync(player: Player)
 	end
 	player:SetAttribute("Qi", data.Qi)
 	player:SetAttribute("Stage", data.Stage)
+	player:SetAttribute("SpiritStones", data.SpiritStones)
+	player:SetAttribute("BeastCores", data.BeastCores)
 end
 
 function PlayerData.Reset(player: Player)
-	dataByPlayer[player] = { Qi = 0, Stage = 1 }
+	dataByPlayer[player] = { Qi = 0, Stage = 1, SpiritStones = 0, BeastCores = 0 }
 	PlayerData.Sync(player)
 end
 

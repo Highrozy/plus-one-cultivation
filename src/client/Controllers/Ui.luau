@@ -84,6 +84,8 @@ function Ui.State()
 	return {
 		Qi = player:GetAttribute("Qi") or 0,
 		Stage = player:GetAttribute("Stage") or 1,
+		SpiritStones = player:GetAttribute("SpiritStones") or 0,
+		BeastCores = player:GetAttribute("BeastCores") or 0,
 	}
 end
 

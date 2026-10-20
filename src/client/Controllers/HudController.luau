@@ -55,9 +55,33 @@ function HudController.Init()
 		Parent = bar,
 	})
 
+	-- Currency counters on the right side of the screen.
+	local currencies = Ui.New("Frame", {
+		BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -12, 0.5, 0),
+		Size = UDim2.fromOffset(200, 64),
+		Parent = screen,
+	}, {
+		Ui.New("UIListLayout", { Padding = UDim.new(0, 4) }),
+	})
+	local stonesLabel = Ui.Label({
+		Size = UDim2.new(1, 0, 0, 28),
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Parent = currencies,
+	})
+	local coresLabel = Ui.Label({
+		Size = UDim2.new(1, 0, 0, 28),
+		TextXAlignment = Enum.TextXAlignment.Right,
+		TextColor3 = Config.Loot.CoreColor,
+		Parent = currencies,
+	})
+
 	Ui.OnStateChanged(function()
 		local state = Ui.State()
 		stageLabel.Text = Formulas.StageName(state.Stage)
+		stonesLabel.Text = `{Config.Names.SpiritStones}: {Format.Number(state.SpiritStones)}`
+		coresLabel.Text = `{Config.Names.BeastCores}: {Format.Number(state.BeastCores)}`
 
 		local nextQi = Formulas.NextStageQi(state.Stage)
 		local progress = 1

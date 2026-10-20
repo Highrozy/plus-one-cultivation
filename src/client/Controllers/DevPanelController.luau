@@ -5,15 +5,20 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Ui = require(script.Parent.Ui)
 
 local DevPanelController = {}
 
-local BUTTONS = {
+local BUTTONS: { { Text: string, Command: string, Arg: string? } } = {
 	{ Text = "Next Stage", Command = "NextStage" },
 	{ Text = "Reset", Command = "Reset" },
 }
+for _, id in Config.BeastOrder do
+	table.insert(BUTTONS, { Text = `Spawn {id}`, Command = "SpawnBeast", Arg = id })
+end
+table.insert(BUTTONS, { Text = "Clear Beasts", Command = "ClearBeasts" })
 
 function DevPanelController.Init()
 	if not RunService:IsStudio() then
@@ -42,7 +47,7 @@ function DevPanelController.Init()
 			Parent = panel,
 		})
 		button.Activated:Connect(function()
-			devCommand:FireServer(info.Command)
+			devCommand:FireServer(info.Command, info.Arg)
 		end)
 	end
 end
