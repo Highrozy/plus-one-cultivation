@@ -4,12 +4,17 @@
 -- Only the server ever writes these values.
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage.Shared.Config)
 
 export type Data = {
 	Qi: number, -- total qi ever gathered (stage requirements are totals)
 	Stage: number, -- 1 = Qi Condensation 1
 	SpiritStones: number,
 	BeastCores: number,
+	Manuals: { [string]: boolean }, -- owned manual ids
+	Upgrades: { [string]: number }, -- upgrade id -> level
 }
 
 local PlayerData = {}
@@ -30,10 +35,18 @@ function PlayerData.Sync(player: Player)
 	player:SetAttribute("Stage", data.Stage)
 	player:SetAttribute("SpiritStones", data.SpiritStones)
 	player:SetAttribute("BeastCores", data.BeastCores)
+	-- Manuals show up as "Manual_<id>" = true, upgrades as "Upgrade_<id>" = level.
+	for id in Config.Manuals do
+		player:SetAttribute(`Manual_{id}`, data.Manuals[id] == true)
+	end
+	for id in Config.Upgrades do
+		player:SetAttribute(`Upgrade_{id}`, data.Upgrades[id] or 0)
+	end
 end
 
 function PlayerData.Reset(player: Player)
-	dataByPlayer[player] = { Qi = 0, Stage = 1, SpiritStones = 0, BeastCores = 0 }
+	dataByPlayer[player] =
+		{ Qi = 0, Stage = 1, SpiritStones = 0, BeastCores = 0, Manuals = {}, Upgrades = {} }
 	PlayerData.Sync(player)
 end
 

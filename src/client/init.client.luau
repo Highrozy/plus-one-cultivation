@@ -8,6 +8,9 @@ local ORDER = {
 	"InputController",
 	"HudController",
 	"BreakthroughController",
+	"ShopController",
+	"CorePickupController",
+	"NotifyController",
 	"DevPanelController",
 }
 

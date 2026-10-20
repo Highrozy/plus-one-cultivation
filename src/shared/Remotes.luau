@@ -2,7 +2,9 @@
 -- Remotes: every RemoteEvent in one list. The server creates them; the client waits for them.
 --
 -- Client -> server (intents only, the server validates everything):
---   Click, DevCommand(name, arg?) [Studio only]
+--   Click, DevCommand(name, arg?) [Studio only], Shop(action, id)
+-- Server -> client:
+--   Notify(message)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -10,6 +12,8 @@ local RunService = game:GetService("RunService")
 local NAMES = {
 	"Click",
 	"DevCommand",
+	"Shop",
+	"Notify",
 }
 
 local folder: Folder

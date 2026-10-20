@@ -2,6 +2,9 @@
 -- Ui: tiny helpers for building greybox UI in code.
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage.Shared.Config)
 
 local Ui = {}
 
@@ -81,11 +84,23 @@ end
 -- Read the player's game state from the attributes the server sets.
 function Ui.State()
 	local player = Players.LocalPlayer
+	local manuals = {}
+	for id in Config.Manuals do
+		if player:GetAttribute(`Manual_{id}`) then
+			manuals[id] = true
+		end
+	end
+	local upgrades = {}
+	for id in Config.Upgrades do
+		upgrades[id] = player:GetAttribute(`Upgrade_{id}`) or 0
+	end
 	return {
 		Qi = player:GetAttribute("Qi") or 0,
 		Stage = player:GetAttribute("Stage") or 1,
 		SpiritStones = player:GetAttribute("SpiritStones") or 0,
 		BeastCores = player:GetAttribute("BeastCores") or 0,
+		Manuals = manuals,
+		Upgrades = upgrades,
 	}
 end
 

@@ -130,13 +130,123 @@ Config.Beasts = {
 Config.BeastOrder = { "Hare", "Boar" }
 
 --------------------------------------------------------------------------
--- Loot. Beast cores drop as glowing balls; only the killer can pick them up.
+-- Loot. Beast cores always drop as pickups; only the killer can pick them up,
+-- by holding the pickup key (E on PC, a button on phones).
+-- Cores use the "BeastCoreModel" mesh in ServerStorage if it exists, else a plain ball.
+-- Players can carry CoreCap cores (more with the Pockets upgrade). Spirit stones have no cap.
 --------------------------------------------------------------------------
 Config.Loot = {
 	CoreColor = Color3.fromRGB(170, 80, 255),
 	CoreSize = 1.2,
 	CoreLifetime = 30, -- seconds before an uncollected core disappears
 	CoreScatter = 3, -- studs the cores spread out around the beast
+	CoreHoldDuration = 0.5, -- seconds to hold the pickup key
+	CoreCap = 5, -- cores a player can carry before upgrades
+}
+
+--------------------------------------------------------------------------
+-- Shops. Any part tagged "ShopPad" with a text attribute "Shop" set to
+-- "Manuals" or "Upgrades" opens that shop while a player stands on it.
+--------------------------------------------------------------------------
+Config.ShopPadTag = "ShopPad"
+Config.ShopRange = 12 -- studs from a pad's center where buying still works (server check)
+
+Config.ShopNames = {
+	Manuals = "Manual Shop",
+	Upgrades = "Upgrade Shop",
+}
+
+-- Basic manuals, bought once each with spirit stones.
+-- Kind "Foundation" raises punch damage by BonusDamagePercent (5 = +5%).
+-- Several foundation manuals add together (+5% and +25% = +30%).
+-- Kinds "Skill" and "Technique" are placeholders for now: buying one only marks it owned.
+export type ManualInfo = {
+	Name: string,
+	Kind: string,
+	Price: number,
+	Description: string,
+	BonusDamagePercent: number?,
+}
+
+Config.Manuals = {
+	FistFoundation = {
+		Name = "Basic Fist Foundation",
+		Kind = "Foundation",
+		Price = 10,
+		Description = "+5% punch damage",
+		BonusDamagePercent = 5,
+	},
+	StoneFistFoundation = {
+		Name = "Stone Fist Foundation",
+		Kind = "Foundation",
+		Price = 50,
+		Description = "+25% punch damage",
+		BonusDamagePercent = 25,
+	},
+	PalmStrike = {
+		Name = "Basic Palm Strike",
+		Kind = "Skill",
+		Price = 25,
+		Description = "Skill (placeholder, does nothing yet)",
+	},
+	BreathingTechnique = {
+		Name = "Basic Breathing Technique",
+		Kind = "Technique",
+		Price = 25,
+		Description = "Technique (placeholder, does nothing yet)",
+	},
+} :: { [string]: ManualInfo }
+
+-- Order manuals appear in the Buy tab.
+Config.ManualOrder = { "FistFoundation", "StoneFistFoundation", "PalmStrike", "BreathingTechnique" }
+
+Config.CoreSellPrice = 2 -- spirit stones per beast core
+
+-- Levelled upgrades. Cost of the next level = BaseCost x CostGrowth ^ (current level).
+-- ComingSoon upgrades are shown greyed out and can't be bought.
+export type UpgradeInfo = {
+	Name: string,
+	Description: string,
+	BaseCost: number,
+	CostGrowth: number,
+	MaxLevel: number,
+	PerLevel: number,
+	ComingSoon: boolean?,
+}
+
+Config.Upgrades = {
+	Pockets = {
+		Name = "Bigger Pockets",
+		Description = "+2 beast cores you can carry",
+		BaseCost = 10,
+		CostGrowth = 1.6,
+		MaxLevel = 10,
+		PerLevel = 2, -- extra core cap per level
+	},
+	TrainingBoost = {
+		Name = "Training Boost",
+		Description = "+10% qi per tap",
+		BaseCost = 15,
+		CostGrowth = 1.6,
+		MaxLevel = 20,
+		PerLevel = 0.1, -- extra qi-per-tap multiplier per level
+	},
+	Luck = {
+		Name = "Luck",
+		Description = "Coming soon",
+		BaseCost = 0,
+		CostGrowth = 1,
+		MaxLevel = 0,
+		PerLevel = 0,
+		ComingSoon = true,
+	},
+} :: { [string]: UpgradeInfo }
+
+Config.UpgradeOrder = { "Pockets", "TrainingBoost", "Luck" }
+
+-- Short messages (e.g. "Not enough Spirit Stones") near the top of the screen.
+Config.Notify = {
+	Lifetime = 2, -- seconds on screen
 }
 
 return Config

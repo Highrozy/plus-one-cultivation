@@ -7,6 +7,8 @@ local Config = require(script.Parent.Config)
 export type State = {
 	Qi: number,
 	Stage: number,
+	Manuals: { [string]: boolean }, -- owned manual ids
+	Upgrades: { [string]: number }, -- upgrade id -> level
 }
 
 local Formulas = {}
@@ -46,12 +48,42 @@ function Formulas.StageMultiplier(stage: number): number
 	return multiplier * realms.MajorRealmMultiplier ^ (realmIndex - 1)
 end
 
+function Formulas.UpgradeLevel(state: State, id: string): number
+	return state.Upgrades[id] or 0
+end
+
+-- Spirit stones for the next level of an upgrade, or nil if maxed / coming soon.
+function Formulas.UpgradeCost(state: State, id: string): number?
+	local info = Config.Upgrades[id]
+	local level = Formulas.UpgradeLevel(state, id)
+	if not info or info.ComingSoon or level >= info.MaxLevel then
+		return nil
+	end
+	return math.floor(info.BaseCost * info.CostGrowth ^ level)
+end
+
 function Formulas.QiPerClick(state: State): number
-	return Config.Click.BaseQi * Formulas.StageMultiplier(state.Stage)
+	local boost = 1 + Formulas.UpgradeLevel(state, "TrainingBoost") * Config.Upgrades.TrainingBoost.PerLevel
+	return Config.Click.BaseQi * Formulas.StageMultiplier(state.Stage) * boost
+end
+
+-- Total bonus damage percent from owned foundation manuals (they add together: 5 + 25 = 30%).
+function Formulas.FoundationPercent(state: State): number
+	local total = 0
+	for id in state.Manuals do
+		local info = Config.Manuals[id]
+		total += if info then info.BonusDamagePercent or 0 else 0
+	end
+	return total
 end
 
 function Formulas.PunchDamage(state: State): number
-	return state.Qi * Config.Combat.DamagePerQi
+	return state.Qi * Config.Combat.DamagePerQi * (1 + Formulas.FoundationPercent(state) / 100)
+end
+
+-- How many beast cores the player can carry.
+function Formulas.CoreCap(state: State): number
+	return Config.Loot.CoreCap + Formulas.UpgradeLevel(state, "Pockets") * Config.Upgrades.Pockets.PerLevel
 end
 
 function Formulas.MaxHealth(stage: number): number

@@ -37,6 +37,10 @@ local COMMANDS: { [string]: (Player, PlayerData.Data, any) -> () } = {
 			RealmService.AddQi(player, nextQi - data.Qi)
 		end
 	end,
+	AddStones = function(player, data)
+		data.SpiritStones += 100
+		PlayerData.Sync(player)
+	end,
 	Reset = function(player)
 		PlayerData.Reset(player)
 	end,
