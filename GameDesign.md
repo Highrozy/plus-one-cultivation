@@ -24,7 +24,7 @@ Everything is grey blocks. No real models, no saving.
 ## 2. Qi (the only stat)
 - Qi is both your **progress** and your **damage**.
 - **Active:** qi per click.
-- **Idle:** qi per second, always ticking.
+- **Training (idle):** standing on a training platform auto-punches its dummy for qi (see section 8). There is no other always-on idle qi.
 - Qi is never spent. Stages are qi thresholds.
 
 ## 3. Realms & breakthroughs (xianxia names)
@@ -36,7 +36,7 @@ Everything is grey blocks. No real models, no saving.
 | Foundation Establishment | 1–9 | **Automatic** |
 | *Rebirth* | at FE 9 | See section 9 |
 
-- Every stage-up gives a **multiplier** to qi per click and qi per second.
+- Every stage-up gives a **multiplier** to qi per click and training qi.
 - Stage-ups get a flash, a sound and a "Stage X!" popup.
 - The major breakthrough is a much bigger multiplier jump.
 - **No bottleneck gates and no failure** in v0.1. Breakthroughs are kid-easy.
@@ -72,7 +72,7 @@ Learned at the **Technique Pavilion**. Walk up and a ProximityPrompt opens the m
 
 **Cultivation techniques (bought with spirit stones)**
 - **Cultivation Method 1:** + qi per click
-- **Cultivation Method 2:** + idle qi per second (works well with the spirit vein)
+- **Cultivation Method 2:** + training platform qi (boosts the auto-punches)
 
 **Fist techniques (bought with beast cores)**
 - **Fist Technique 1:** + punch damage
@@ -80,9 +80,13 @@ Learned at the **Technique Pavilion**. Walk up and a ProximityPrompt opens the m
 
 Names and flavor are placeholders. Use original demon-fist-style names inspired by Northern Blade, not copied ones.
 
-## 8. Spirit vein (idle zone)
-- A glowing area near spawn. **Standing in it multiplies idle qi.**
-- It gives the map a choice: sit and cultivate, or go hunt.
+## 8. Training platforms (spirit veins, the idle zone)
+*Changed 2026-10-20: replaces the single spirit vein and always-on idle qi.*
+- A row of platforms in the hub, each with a practice dummy. **Standing on one auto-punches its dummy for qi** (an automatic click).
+- Each platform is a higher-grade spirit vein with a bigger **qi multiplier** (placeholder: x1.5 / x2 / x4 / x6).
+- Better platforms **unlock by rebirth count** (placeholder: 0 / 1 / 2 / 3). This gives rebirth a visible reward.
+- Manual taps still add qi on top while you train, so active play is always better.
+- Platforms give qi but no loot, so you still have to hunt for spirit stones and beast cores.
 
 ## 9. Rebirth
 - **Unlocks at Foundation Establishment 9.** A Rebirth button appears.
@@ -92,9 +96,10 @@ Names and flavor are placeholders. Use original demon-fist-style names inspired 
 - The rebirth count shows on the overhead tag.
 
 ## 10. Map (greybox)
-```
-Spawn → Spirit Vein → Technique Pavilion → path → Hunting Ground [Tier 1 → Tier 2 → Tier 3]
-```
+*Changed 2026-10-20: circular hub layout.*
+- **Circular walled hub** with spawn in the middle. Everything you need to progress is one short walk away: the training platform row along the back wall and the Technique Pavilion on one side.
+- **One gate** in the hub wall leads out to the Hunting Ground: Tier 1 → Tier 2 → Tier 3 in a line, in the same world (no teleports).
+
 Small and dense, with short walks. Tier zones should be clearly separated, using different colored blocks for now.
 
 ## 11. UI (ugly but working, mobile-sized)
@@ -118,8 +123,8 @@ Saving, pills, bottleneck gates, failure states, sword and other paths, spiritua
 **Tribulation lightning** on the QC 9 → FE 1 breakthrough: the sky darkens, lightning strikes the player, and the whole lobby sees it.
 
 ## Build order (test + git commit after each)
-1. Map greybox + spirit vein
-2. Clicking → qi (active + idle + 5/sec cap)
+1. Map greybox (circular hub + training platforms)
+2. Clicking → qi (active + training platforms + 5/sec cap)
 3. Realm stages + auto-breakthrough + major breakthrough button
 4. Beasts: health, punching, respawn
 5. Loot drops (spirit stones + beast cores)

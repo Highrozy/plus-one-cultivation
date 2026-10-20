@@ -1,1 +1,2 @@
-print("Hello world, from client!")
+--!strict
+-- Client entry point: starts every UI/input controller in order (none yet).
