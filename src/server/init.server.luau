@@ -5,7 +5,18 @@
 local Services = script.Services
 
 local ORDER = {
-	"MapBuilder",
+	"MapBuilder", -- first: other services look for map parts
+	"PlayerData",
+	"RealmService",
+	"BeastService",
+	"LootService",
+	"CombatService",
+	"ClickService",
+	"TrainingService",
+	"TechniqueService",
+	"RebirthService",
+	"TagService",
+	"DebugService", -- Studio-only test shortcuts
 }
 
 for _, name in ORDER do

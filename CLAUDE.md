@@ -34,3 +34,9 @@ Design context (decisions, parked ideas, open questions) lives in the Obsidian v
 - `src/server` → ServerScriptService.Server (`init.server.luau` boots the services)
 - `src/client` → StarterPlayerScripts.Client (`init.client.luau` boots the controllers)
 - `src/shared` → ReplicatedStorage.Shared (Config, Remotes, shared helpers)
+
+## Notes
+- `DebugService` exposes `ServerStorage.DebugCommand` in Studio only (give qi/currency/rebirths
+  for testing). It does nothing on live servers.
+- New Roblox avatars use `AnimationConstraint` joints, not `Motor6D`, and client scripts can't
+  set joint `C0`. The punch animation writes `.Transform` in `PreSimulation` instead.
