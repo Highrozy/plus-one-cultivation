@@ -14,8 +14,9 @@ export type Data = {
 	Stones: number,
 	Cores: number,
 	Rebirths: number,
-	Techniques: { [string]: number },
+	Techniques: { [string]: number }, -- technique and skill levels by Id
 	PunchCount: number, -- beast punches landed, for Heavy Strike
+	InTribulation: boolean, -- mid-breakthrough, waiting for the lightning to finish
 }
 
 local PlayerData = {}
@@ -26,6 +27,9 @@ local function freshTechniques(): { [string]: number }
 	local levels = {}
 	for _, technique in Config.Techniques do
 		levels[technique.Id] = 0
+	end
+	for _, skill in Config.Skills do
+		levels[skill.Id] = 0
 	end
 	return levels
 end
@@ -74,6 +78,7 @@ function PlayerData.Init()
 			Rebirths = 0,
 			Techniques = freshTechniques(),
 			PunchCount = 0,
+			InTribulation = false,
 		}
 		PlayerData.Sync(player)
 	end

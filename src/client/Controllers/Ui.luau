@@ -78,6 +78,25 @@ function Ui.Button(props: { [string]: any }): TextButton
 	return button
 end
 
+-- Shake the camera for `time` seconds (runs right after Roblox moves the camera each frame).
+local shakeCount = 0
+function Ui.ShakeCamera(strength: number, time: number)
+	local RunService = game:GetService("RunService")
+	shakeCount += 1
+	local name = "CameraShake" .. shakeCount
+	local start = os.clock()
+	RunService:BindToRenderStep(name, Enum.RenderPriority.Camera.Value + 1, function()
+		local elapsed = os.clock() - start
+		if elapsed >= time then
+			RunService:UnbindFromRenderStep(name)
+			return
+		end
+		local amount = strength * (1 - elapsed / time)
+		local camera = workspace.CurrentCamera
+		camera.CFrame *= CFrame.new((math.random() - 0.5) * amount, (math.random() - 0.5) * amount, 0)
+	end)
+end
+
 -- Read the player's game state from the attributes the server sets.
 function Ui.State()
 	local player = Players.LocalPlayer

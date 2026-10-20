@@ -37,14 +37,30 @@ function RealmService.CanBreakthrough(data: PlayerData.Data): boolean
 end
 
 function RealmService.Init()
+	local tribulation = Remotes.Get("Tribulation")
+	local strikes = Config.Tribulation
+	local tribulationTime = strikes.FirstStrikeDelay + (strikes.Strikes - 1) * strikes.TimeBetweenStrikes + 0.3
+
+	-- Major breakthrough: everyone sees the tribulation lightning, then the player reaches the new realm.
 	Remotes.Get("Breakthrough").OnServerEvent:Connect(function(player)
 		local data = PlayerData.Get(player)
-		if not data or not RealmService.CanBreakthrough(data) then
+		if not data or data.InTribulation or not RealmService.CanBreakthrough(data) then
 			return
 		end
-		data.Stage = MAJOR
-		autoAdvance(data)
-		PlayerData.Sync(player)
+		data.InTribulation = true
+		player:SetAttribute("InTribulation", true)
+		tribulation:FireAllClients(player)
+
+		task.delay(tribulationTime, function()
+			if PlayerData.Get(player) ~= data then
+				return -- player left
+			end
+			data.InTribulation = false
+			player:SetAttribute("InTribulation", false)
+			data.Stage = MAJOR
+			autoAdvance(data)
+			PlayerData.Sync(player)
+		end)
 	end)
 end
 

@@ -161,6 +161,96 @@ Config.Techniques = {
 }
 
 --------------------------------------------------------------------------
+-- Skills (active moves, bought at the Pavilion with beast cores like techniques).
+-- Level 0 = not learned. Damage = normal punch damage x (DamageMultiplier + (level-1) x DamagePerLevel).
+-- Key = keyboard key; phones get on-screen buttons.
+-- ImpactDelay = seconds from pressing to the hit landing (matches the animation).
+--------------------------------------------------------------------------
+Config.Skills = {
+	{
+		Id = "DashStrike",
+		Name = "Thunderstep Rush",
+		Description = "Dash forward and hit everything in your path",
+		Kind = "Skill",
+		Currency = "Cores",
+		Key = "Q",
+		BaseCost = 20,
+		CostGrowth = 1.6,
+		MaxLevel = 10,
+		Cooldown = 5,
+		DamageMultiplier = 3,
+		DamagePerLevel = 1,
+		Distance = 28, -- studs dashed
+		Width = 8, -- how wide the hit path is
+		DashTime = 0.22, -- seconds the dash movement takes
+		ImpactDelay = 0.1,
+	},
+	{
+		Id = "Shockwave",
+		Name = "Earthshatter Stomp",
+		Description = "Slam the ground and hit everything around you",
+		Kind = "Skill",
+		Currency = "Cores",
+		Key = "R",
+		BaseCost = 40,
+		CostGrowth = 1.6,
+		MaxLevel = 10,
+		Cooldown = 9,
+		DamageMultiplier = 4,
+		DamagePerLevel = 1.5,
+		Radius = 16,
+		ImpactDelay = 0.4,
+	},
+	{
+		Id = "PalmWave",
+		Name = "Heaven-Piercing Palm",
+		Description = "Fire a wave of qi that hits everything in a line",
+		Kind = "Skill",
+		Currency = "Cores",
+		Key = "F",
+		BaseCost = 30,
+		CostGrowth = 1.6,
+		MaxLevel = 10,
+		Cooldown = 7,
+		DamageMultiplier = 3,
+		DamagePerLevel = 1,
+		Range = 45,
+		Width = 9,
+		ImpactDelay = 0.25,
+	},
+}
+
+--------------------------------------------------------------------------
+-- Tribulation lightning on the major breakthrough (QC9 -> FE1).
+-- The breakthrough completes after the last strike. Everyone sees it.
+--------------------------------------------------------------------------
+Config.Tribulation = {
+	Strikes = 3,
+	FirstStrikeDelay = 1, -- seconds of darkening sky before the first bolt
+	TimeBetweenStrikes = 0.8,
+}
+
+--------------------------------------------------------------------------
+-- Uploaded assets. Empty = use the built-in fallback (code animation / part VFX).
+-- Fill these in after publishing the Blender animations and importing the
+-- Blender VFX meshes (see assets/README.md).
+--------------------------------------------------------------------------
+Config.Assets = {
+	Animations = { -- "rbxassetid://..."
+		PunchRight = "",
+		PunchLeft = "",
+		DashStrike = "",
+		Shockwave = "",
+		PalmWave = "",
+	},
+	Meshes = { -- "rbxassetid://..." (MeshId of the imported MeshPart)
+		ShockwaveRing = "",
+		DashSlash = "",
+		PalmWave = "",
+	},
+}
+
+--------------------------------------------------------------------------
 -- Map (greybox)
 -- A circular hub with spawn in the middle. Angles are measured around the
 -- hub: 0 = the gate to the hunting ground (+X), 90 = +Z, 180 = back (-X).

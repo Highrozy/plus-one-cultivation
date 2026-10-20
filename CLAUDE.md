@@ -40,3 +40,7 @@ Design context (decisions, parked ideas, open questions) lives in the Obsidian v
   for testing). It does nothing on live servers.
 - New Roblox avatars use `AnimationConstraint` joints, not `Motor6D`, and client scripts can't
   set joint `C0`. The punch animation writes `.Transform` in `PreSimulation` instead.
+- Animations are authored in Blender (`assets/blender/plus1_animations.blend`) and exported to
+  `src/shared/AnimationData.luau` by `assets/blender/export_animations.py`. AnimController plays
+  that data directly until an uploaded ID is set in `Config.Assets`. See `assets/README.md`.
+- Skill VFX use Blender meshes from `Config.Assets.Meshes` when set, plain neon parts otherwise.

@@ -6,6 +6,7 @@ local Services = script.Services
 
 local ORDER = {
 	"MapBuilder", -- first: other services look for map parts
+	"VfxAssetService",
 	"PlayerData",
 	"RealmService",
 	"BeastService",
@@ -15,6 +16,7 @@ local ORDER = {
 	"TrainingService",
 	"TechniqueService",
 	"RebirthService",
+	"SkillService",
 	"TagService",
 	"DebugService", -- Studio-only test shortcuts
 }

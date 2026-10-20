@@ -6,11 +6,15 @@ local Controllers = script.Controllers
 
 local ORDER = {
 	"InputController",
-	"PunchAnimController",
+	"AnimController",
 	"FloatTextController",
 	"LootFxController",
 	"HudController",
 	"PavilionController",
+	"SkillFxController",
+	"SkillBarController",
+	"TribulationController",
+	"DevPanelController",
 }
 
 for _, name in ORDER do

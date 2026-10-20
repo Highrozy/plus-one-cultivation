@@ -133,6 +133,38 @@ function BeastService.FindNearest(position: Vector3, range: number): Beast?
 	return best
 end
 
+-- Every living beast whose edge is within `radius` studs of `position` (flat, ignoring height).
+function BeastService.InRadius(position: Vector3, radius: number): { Beast }
+	local found = {}
+	for _, beast in beasts do
+		local offset = beast.Body.Position - position
+		if beast.Alive and Vector3.new(offset.X, 0, offset.Z).Magnitude - beast.Radius <= radius then
+			table.insert(found, beast)
+		end
+	end
+	return found
+end
+
+-- Every living beast touching the flat strip from `from` to `to` that is `halfWidth` wide on each side.
+function BeastService.InPath(from: Vector3, to: Vector3, halfWidth: number): { Beast }
+	local a = Vector3.new(from.X, 0, from.Z)
+	local b = Vector3.new(to.X, 0, to.Z)
+	local length = (b - a).Magnitude
+	local direction = if length > 0 then (b - a) / length else Vector3.zero
+	local found = {}
+	for _, beast in beasts do
+		if beast.Alive then
+			local p = Vector3.new(beast.Body.Position.X, 0, beast.Body.Position.Z)
+			local along = math.clamp((p - a):Dot(direction), 0, length)
+			local closest = a + direction * along
+			if (p - closest).Magnitude - beast.Radius <= halfWidth then
+				table.insert(found, beast)
+			end
+		end
+	end
+	return found
+end
+
 -- Deal damage. Returns true if this hit killed the beast.
 function BeastService.Damage(beast: Beast, amount: number): boolean
 	if not beast.Alive then

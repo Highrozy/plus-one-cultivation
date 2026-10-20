@@ -49,13 +49,19 @@ function CombatService.TryPunch(player: Player): boolean
 		damage *= Formulas.HeavyStrikeMultiplier(heavyLevel)
 	end
 
+	CombatService.Hit(player, beast, damage, if isHeavy then "Heavy" else "Damage")
+	return true
+end
+
+-- Damage one beast for `player`: shows the number, and gives loot if it dies.
+-- `kind` picks the damage number style ("Damage", "Heavy", "Skill").
+function CombatService.Hit(player: Player, beast: BeastService.Beast, damage: number, kind: string)
 	local position = beast.Body.Position + Vector3.new(0, beast.Body.Size.Y / 2 + 1, 0)
-	floatText:FireClient(player, position, Format.Number(math.floor(damage)), if isHeavy then "Heavy" else "Damage")
+	floatText:FireClient(player, position, Format.Number(math.floor(damage)), kind)
 
 	if BeastService.Damage(beast, damage) then
 		LootService.Drop(player, beast.Tier, beast.Body.Position)
 	end
-	return true
 end
 
 function CombatService.Init()

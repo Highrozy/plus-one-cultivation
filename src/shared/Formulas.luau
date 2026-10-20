@@ -13,9 +13,13 @@ export type State = {
 
 local Formulas = {}
 
+-- Techniques and skills are both "upgrades" bought at the Pavilion, looked up by Id.
 local techniqueById = {}
 for _, technique in Config.Techniques do
 	techniqueById[technique.Id] = technique
+end
+for _, skill in Config.Skills do
+	techniqueById[skill.Id] = skill
 end
 
 function Formulas.GetTechnique(id: string)
@@ -78,6 +82,13 @@ end
 function Formulas.HeavyStrikeMultiplier(level: number): number
 	local heavy = techniqueById.HeavyStrike
 	return heavy.BaseMultiplier + level * heavy.EffectPerLevel
+end
+
+-- Damage of one hit from a skill at the given level (level 1 = just learned).
+function Formulas.SkillDamage(state: State, id: string): number
+	local skill = techniqueById[id]
+	local level = math.max(state.Techniques[id] or 0, 1)
+	return Formulas.PunchDamage(state) * (skill.DamageMultiplier + (level - 1) * skill.DamagePerLevel)
 end
 
 function Formulas.TechniqueCost(id: string, currentLevel: number): number

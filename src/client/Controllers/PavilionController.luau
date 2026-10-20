@@ -19,6 +19,13 @@ local CLOSE_DISTANCE = 22
 
 -- Short description of what a technique does at a given level.
 local function effectText(technique, level: number): string
+	if technique.Kind == "Skill" then
+		if level == 0 then
+			return `Not learned. {technique.Description}`
+		end
+		local multiplier = technique.DamageMultiplier + (level - 1) * technique.DamagePerLevel
+		return `x{multiplier} punch damage, {technique.Cooldown}s cooldown [{technique.Key}]`
+	end
 	if technique.Id == "HeavyStrike" then
 		if level == 0 then
 			return "Not learned"
@@ -92,18 +99,28 @@ function PavilionController.Init()
 	local headers = {
 		Cultivation = `Cultivation Techniques (cost {Config.Names.Stones})`,
 		Fist = `Fist Techniques (cost {Config.Names.Cores})`,
+		Skill = `Skills (cost {Config.Names.Cores})`,
 	}
-	for _, kind in { "Cultivation", "Fist" } do
+	local everything = table.clone(Config.Techniques)
+	for _, skill in Config.Skills do
+		table.insert(everything, skill)
+	end
+	local headerColors = {
+		Cultivation = Color3.fromRGB(120, 210, 255),
+		Fist = Color3.fromRGB(255, 130, 110),
+		Skill = Color3.fromRGB(255, 220, 110),
+	}
+	for _, kind in { "Cultivation", "Fist", "Skill" } do
 		order += 1
 		Ui.Label({
 			LayoutOrder = order,
 			Size = UDim2.new(1, -8, 0, 28),
 			Text = headers[kind],
 			TextXAlignment = Enum.TextXAlignment.Left,
-			TextColor3 = if kind == "Cultivation" then Color3.fromRGB(120, 210, 255) else Color3.fromRGB(255, 130, 110),
+			TextColor3 = headerColors[kind],
 			Parent = list,
 		})
-		for _, technique in Config.Techniques do
+		for _, technique in everything do
 			if technique.Kind == kind then
 				order += 1
 				local row = Ui.New("Frame", {

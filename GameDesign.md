@@ -116,6 +116,16 @@ Small and dense, with short walks. Tier zones should be clearly separated, using
 
 ---
 
+## 13. Skills (added 2026-10-21)
+Active moves bought and upgraded at the Technique Pavilion with beast cores. Keyboard Q / R / F, on-screen buttons on phones, each with a cooldown.
+- **Thunderstep Rush (Q):** dash forward and hit everything in your path.
+- **Earthshatter Stomp (R):** slam the ground and hit everything around you.
+- **Heaven-Piercing Palm (F):** a wave of qi that hits everything in a line.
+Skill damage is a multiple of your punch damage. Skills reset on rebirth like techniques.
+
+## 14. Tribulation lightning (added 2026-10-21)
+Pressing Breakthrough at QC9 darkens the sky and lightning strikes the player 3 times (the whole lobby sees it), then the player reaches Foundation Establishment 1.
+
 ## Not in v0.1 (on purpose)
 Saving, pills, bottleneck gates, failure states, sword and other paths, spiritual roots, sects, shops, temporary boosts, pocket capacity, game passes, leaderboards. See Parked Ideas.
 
