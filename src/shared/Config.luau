@@ -237,16 +237,16 @@ Config.Tribulation = {
 --------------------------------------------------------------------------
 Config.Assets = {
 	Animations = { -- "rbxassetid://..."
-		PunchRight = "",
-		PunchLeft = "",
-		DashStrike = "",
+		PunchRight = "rbxassetid://90800484993405",
+		PunchLeft = "rbxassetid://74402681369068",
+		DashStrike = "rbxassetid://136229747100730",
 		Shockwave = "rbxassetid://83701634868478",
-		PalmWave = "",
+		PalmWave = "rbxassetid://122443246830766",
 	},
 	Meshes = { -- "rbxassetid://..." (MeshId of the imported MeshPart)
-		ShockwaveRing = "",
-		DashSlash = "",
-		PalmWave = "",
+		ShockwaveRing = "rbxassetid://78562489111896",
+		DashSlash = "rbxassetid://137829345299767",
+		PalmWave = "rbxassetid://131858574676336",
 	},
 }
 

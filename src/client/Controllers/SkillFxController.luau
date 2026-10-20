@@ -121,9 +121,14 @@ local function palmWaveFx(info, skill)
 		local start: Vector3, direction: Vector3 = info.Start, info.Direction
 		local wave = effectPart("PalmWave", Enum.PartType.Block)
 		local isMesh = wave:IsA("MeshPart")
-		wave.Size = if isMesh then Vector3.new(skill.Width, skill.Width * 0.8, 3) else Vector3.new(skill.Width, 5, 1)
+		-- The Blender mesh's arc runs along its Y axis and its thin side is X, so we tip it 90 degrees:
+		-- the arc then spans side to side and the thin side is stretched into a tall wall.
+		wave.Size = if isMesh then Vector3.new(5, skill.Width, 3) else Vector3.new(skill.Width, 5, 1)
 		wave.Transparency = 0.15
 		local from = CFrame.lookAt(start + direction * 2, start + direction * 3)
+		if isMesh then
+			from *= CFrame.Angles(0, 0, math.rad(90))
+		end
 		wave.CFrame = from
 		local travel = 0.35
 		TweenService:Create(wave, TweenInfo.new(travel, Enum.EasingStyle.Linear), {
