@@ -240,7 +240,7 @@ Config.Assets = {
 		PunchRight = "",
 		PunchLeft = "",
 		DashStrike = "",
-		Shockwave = "",
+		Shockwave = "rbxassetid://83701634868478",
 		PalmWave = "",
 	},
 	Meshes = { -- "rbxassetid://..." (MeshId of the imported MeshPart)
