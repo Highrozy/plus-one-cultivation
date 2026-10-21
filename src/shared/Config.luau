@@ -89,8 +89,7 @@ export type BeastInfo = {
 	AggroRange: number, -- starts chasing players this close
 	LeashRange: number, -- gives up and walks home past this distance from home
 	WanderRadius: number,
-	SpiritStones: number, -- given straight to the killer
-	BeastCores: number, -- dropped on the ground as pickups
+	SpiritStones: number, -- given straight to the killer (every beast also drops 1 core)
 }
 
 Config.Beasts = {
@@ -107,7 +106,6 @@ Config.Beasts = {
 		LeashRange = 50,
 		WanderRadius = 12,
 		SpiritStones = 1,
-		BeastCores = 1,
 	},
 	Boar = {
 		Name = "Practice Boar",
@@ -122,7 +120,6 @@ Config.Beasts = {
 		LeashRange = 50,
 		WanderRadius = 12,
 		SpiritStones = 5,
-		BeastCores = 3,
 	},
 } :: { [string]: BeastInfo }
 
@@ -130,7 +127,7 @@ Config.Beasts = {
 Config.BeastOrder = { "Hare", "Boar" }
 
 --------------------------------------------------------------------------
--- Loot. Beast cores always drop as pickups; only the killer can pick them up,
+-- Loot. Every beast drops exactly one beast core as a pickup; only the killer can pick it up,
 -- by holding the pickup key (E on PC, a button on phones).
 -- Cores use the "BeastCoreModel" mesh in ServerStorage if it exists, else a plain ball.
 -- Players can carry CoreCap cores (more with the Pockets upgrade). Spirit stones have no cap.
@@ -139,7 +136,6 @@ Config.Loot = {
 	CoreColor = Color3.fromRGB(170, 80, 255),
 	CoreSize = 1.2,
 	CoreLifetime = 30, -- seconds before an uncollected core disappears
-	CoreScatter = 3, -- studs the cores spread out around the beast
 	CoreHoldDuration = 0.5, -- seconds to hold the pickup key
 	CoreCap = 5, -- cores a player can carry before upgrades
 }

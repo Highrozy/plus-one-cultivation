@@ -1,7 +1,7 @@
 --!strict
 -- LootService: rewards for killing a beast (placeholder design).
--- Spirit stones go straight to the killer (no cap). Beast cores always drop as pickups
--- that only the killer can collect, by holding the pickup prompt, up to their core cap.
+-- Spirit stones go straight to the killer (no cap). Every beast drops one beast core as a
+-- pickup that only the killer can collect, by holding the pickup prompt, up to their core cap.
 
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
@@ -34,14 +34,11 @@ end
 
 local function dropCore(owner: Player, ground: Vector3)
 	local loot = Config.Loot
-	local angle = math.random() * math.pi * 2
-	local offset = Vector3.new(math.cos(angle), 0, math.sin(angle)) * math.random() * loot.CoreScatter
-
 	local core = newCorePart()
 	core.Name = "BeastCore"
 	core.Anchored = true
 	core.CanCollide = false
-	core.Position = ground + offset + Vector3.new(0, core.Size.Y / 2 + 0.5, 0)
+	core.Position = ground + Vector3.new(0, core.Size.Y / 2 + 0.5, 0)
 	core:SetAttribute("Owner", owner.UserId)
 	CollectionService:AddTag(core, CORE_TAG)
 
@@ -77,9 +74,7 @@ function LootService.Drop(killer: Player, info: Config.BeastInfo, ground: Vector
 	end
 	data.SpiritStones += info.SpiritStones
 	PlayerData.Sync(killer)
-	for _ = 1, info.BeastCores do
-		dropCore(killer, ground)
-	end
+	dropCore(killer, ground) -- every beast drops exactly one core
 end
 
 function LootService.Init() end
