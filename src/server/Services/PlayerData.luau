@@ -12,7 +12,8 @@ export type Data = {
 	Qi: number, -- total qi ever gathered (stage requirements are totals)
 	Stage: number, -- 1 = Qi Condensation 1
 	SpiritStones: number,
-	BeastCores: number,
+	BeastCores: number, -- total carried, all types and grades (always the sum of Cores)
+	Cores: { [string]: { [number]: number } }, -- core id -> grade index -> count
 	Manuals: { [string]: boolean }, -- owned manual ids
 	Upgrades: { [string]: number }, -- upgrade id -> level
 	Rebirths: number,
@@ -46,6 +47,21 @@ function PlayerData.Sync(player: Player)
 	for id in Config.Upgrades do
 		player:SetAttribute(`Upgrade_{id}`, data.Upgrades[id] or 0)
 	end
+	-- Cores show up as "Core_<id>_<grade index>" = count.
+	for id in Config.Cores do
+		local grades = data.Cores[id] or {}
+		for grade in Config.CoreGrades do
+			player:SetAttribute(`Core_{id}_{grade}`, grades[grade] or 0)
+		end
+	end
+end
+
+-- Add (or remove, with a negative amount) cores of one type and grade.
+function PlayerData.AddCores(data: Data, id: string, grade: number, amount: number)
+	local grades = data.Cores[id] or {}
+	data.Cores[id] = grades
+	grades[grade] = (grades[grade] or 0) + amount
+	data.BeastCores += amount
 end
 
 function PlayerData.Reset(player: Player)
@@ -54,6 +70,7 @@ function PlayerData.Reset(player: Player)
 		Stage = 1,
 		SpiritStones = 0,
 		BeastCores = 0,
+		Cores = {},
 		Manuals = {},
 		Upgrades = {},
 		Rebirths = 0,

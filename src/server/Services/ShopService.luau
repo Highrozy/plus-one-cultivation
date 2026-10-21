@@ -56,21 +56,27 @@ local ACTIONS: { [string]: { Shop: string, Run: (Player, PlayerData.Data, any) -
 			notify:FireClient(player, `Learned {info.Name}`)
 		end,
 	},
-	-- amount: a number of cores, or "All"
+	-- which: "All" sells every core, or { Core = id, Grade = n } sells all cores of that type and grade
 	SellCores = {
 		Shop = "Manuals",
-		Run = function(player, data, amount)
-			local count = if amount == "All" then data.BeastCores else tonumber(amount)
-			if not count or count < 1 or count % 1 ~= 0 then
-				return
+		Run = function(player, data, which)
+			local earned = 0
+			for id, grades in data.Cores do
+				for grade, count in grades do
+					local picked = which == "All"
+						or typeof(which) == "table" and which.Core == id and which.Grade == grade
+					if picked and count > 0 then
+						earned += count * Formulas.CoreSellPrice(id, grade)
+						PlayerData.AddCores(data, id, grade, -count)
+					end
+				end
 			end
-			count = math.min(count, data.BeastCores)
-			if count == 0 then
+			if earned == 0 then
 				notify:FireClient(player, `No {Config.Names.BeastCores} to sell`)
 				return
 			end
-			data.BeastCores -= count
-			data.SpiritStones += count * Config.CoreSellPrice
+			data.SpiritStones += earned
+			notify:FireClient(player, `Sold for {earned} {Config.Names.SpiritStones}`)
 		end,
 	},
 	BuyUpgrade = {

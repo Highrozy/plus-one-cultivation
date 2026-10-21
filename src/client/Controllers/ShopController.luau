@@ -64,7 +64,12 @@ end
 
 -- One row: name + detail text on the left, a button on the right.
 -- update() returns the detail text, button text and whether the button is usable.
-local function addRow(order: number, name: string, onClick: () -> (), update: () -> (string, string, boolean))
+local function addRow(
+	order: number,
+	name: string,
+	onClick: () -> (),
+	update: () -> (string, string, boolean)
+): Frame
 	local row = Ui.New("Frame", {
 		BackgroundColor3 = Color3.fromRGB(40, 40, 50),
 		Size = UDim2.new(1, -8, 0, 64),
@@ -105,6 +110,7 @@ local function addRow(order: number, name: string, onClick: () -> (), update: ()
 		usable = canUse
 		button.BackgroundColor3 = if canUse then BUY_COLOR else OFF_COLOR
 	end)
+	return row
 end
 
 local function buildManualsBuy()
@@ -121,22 +127,41 @@ local function buildManualsBuy()
 	end
 end
 
+-- One "Sell everything" row, then one row per core type and grade the player has
+-- (rarest first; rows they have none of are hidden).
 local function buildManualsSell()
-	local price = Config.CoreSellPrice
-	addRow(1, `Sell 1 {Config.Names.BeastCores}`, function()
-		shopRemote:FireServer("SellCores", 1)
-	end, function()
-		local state = Ui.State()
-		return `You have {state.BeastCores}/{Formulas.CoreCap(state)}`,
-			`+{price} Stones`,
-			state.BeastCores > 0
-	end)
-	addRow(2, `Sell all {Config.Names.BeastCores}`, function()
+	addRow(1, `Sell all {Config.Names.BeastCores}`, function()
 		shopRemote:FireServer("SellCores", "All")
 	end, function()
-		local cores = Ui.State().BeastCores
-		return `{price} Stones each`, `+{Format.Number(cores * price)} Stones`, cores > 0
+		local state = Ui.State()
+		local total = 0
+		for id, grades in state.Cores do
+			for grade, count in grades do
+				total += count * Formulas.CoreSellPrice(id, grade)
+			end
+		end
+		return `You have {state.BeastCores}/{Formulas.CoreCap(state)}`,
+			`+{Format.Number(total)} Stones`,
+			state.BeastCores > 0
 	end)
+
+	local order = 1
+	for _, id in Config.CoreOrder do
+		for grade = #Config.CoreGrades, 1, -1 do
+			order += 1
+			local price = Formulas.CoreSellPrice(id, grade)
+			local row: Frame
+			row = addRow(order, Formulas.CoreName(id, grade), function()
+				shopRemote:FireServer("SellCores", { Core = id, Grade = grade })
+			end, function()
+				local count = Ui.State().Cores[id][grade]
+				row.Visible = count > 0
+				return `x{count}, {Format.Number(price)} Stones each`,
+					`+{Format.Number(count * price)} Stones`,
+					true
+			end)
+		end
+	end
 end
 
 local function buildUpgrades()

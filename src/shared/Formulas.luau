@@ -104,6 +104,53 @@ function Formulas.PunchDamage(state: State): number
 	return state.Qi * Config.Combat.DamagePerQi * (1 + Formulas.FoundationPercent(state) / 100)
 end
 
+function Formulas.BeastMaxHealth(info: Config.BeastInfo): number
+	local zone = Config.ZoneHealth
+	return zone.BeastBaseHealth * zone.HealthGrowth ^ (info.Zone - 1) * info.HealthScale
+end
+
+-- Total luck for a core grade roll (0.25 = +25%), from the Luck upgrade plus the beast's bonus.
+function Formulas.Luck(state: State, beastBonus: number?): number
+	return Formulas.UpgradeLevel(state, "Luck") * Config.Upgrades.Luck.PerLevel + (beastBonus or 0)
+end
+
+-- Chance of each grade (same order as Config.CoreGrades), adding up to 1.
+function Formulas.GradeChances(luck: number): { number }
+	local weights = {}
+	local total = 0
+	for index, grade in Config.CoreGrades do
+		local weight = grade.Weight * (1 + luck) ^ (index - 1)
+		weights[index] = weight
+		total += weight
+	end
+	for index, weight in weights do
+		weights[index] = weight / total
+	end
+	return weights
+end
+
+-- Picks a grade index at random using GradeChances.
+function Formulas.RollGrade(luck: number): number
+	local roll = math.random()
+	for index, chance in Formulas.GradeChances(luck) do
+		roll -= chance
+		if roll <= 0 then
+			return index
+		end
+	end
+	return 1
+end
+
+-- Spirit stones for selling one core of this type and grade.
+function Formulas.CoreSellPrice(coreId: string, grade: number): number
+	return math.floor(Config.Cores[coreId].SellPrice * Config.CoreGrades[grade].PriceMultiplier)
+end
+
+-- "S-grade Wolf Core"
+function Formulas.CoreName(coreId: string, grade: number): string
+	return `{Config.CoreGrades[grade].Name}-grade {Config.Cores[coreId].Name}`
+end
+
 -- How many beast cores the player can carry.
 function Formulas.CoreCap(state: State): number
 	return Config.Loot.CoreCap + Formulas.UpgradeLevel(state, "Pockets") * Config.Upgrades.Pockets.PerLevel

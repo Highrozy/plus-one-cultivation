@@ -94,11 +94,19 @@ function Ui.State()
 	for id in Config.Upgrades do
 		upgrades[id] = player:GetAttribute(`Upgrade_{id}`) or 0
 	end
+	local cores = {}
+	for id in Config.Cores do
+		cores[id] = {}
+		for grade in Config.CoreGrades do
+			cores[id][grade] = player:GetAttribute(`Core_{id}_{grade}`) or 0
+		end
+	end
 	return {
 		Qi = player:GetAttribute("Qi") or 0,
 		Stage = player:GetAttribute("Stage") or 1,
 		SpiritStones = player:GetAttribute("SpiritStones") or 0,
 		BeastCores = player:GetAttribute("BeastCores") or 0,
+		Cores = cores,
 		Manuals = manuals,
 		Upgrades = upgrades,
 		Rebirths = player:GetAttribute("Rebirths") or 0,

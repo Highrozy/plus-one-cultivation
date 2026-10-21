@@ -66,22 +66,48 @@ Config.Combat = {
 	PunchesPerSecond = 2,
 	AutoPunch = true, -- punch the nearest beast in range without tapping
 	PunchRange = 7, -- studs from the player to the beast's edge
-	DamagePerQi = 1, -- punch damage = the player's qi x this
+	DamagePerQi = 1, -- punch damage = the player's total qi x this
 }
 
 --------------------------------------------------------------------------
--- Beasts. Placeholder practice beasts: plain blocks, numbers will change.
+-- Zones. Zone 1, 2, 3... each get tougher. A beast's max health is
+-- BeastBaseHealth x HealthGrowth ^ (zone - 1) x its own HealthScale.
+-- No gates: anyone can walk in, the beasts' damage is what stops you.
+-- Any part tagged "ZoneSign" with a number attribute "Zone" shows that zone's name and
+-- recommended qi above it. RecommendedQi is a hand-set guide for now.
+--------------------------------------------------------------------------
+Config.ZoneSignTag = "ZoneSign"
+
+Config.ZoneHealth = {
+	BeastBaseHealth = 300, -- a normal Zone 1 beast
+	HealthGrowth = 10, -- every zone multiplies beast health by this
+}
+
+export type ZoneInfo = {
+	Name: string,
+	RecommendedQi: number,
+}
+
+Config.Zones = {
+	{ Name = "Zone 1: Qi Wolf Den", RecommendedQi = 300 },
+	{ Name = "Zone 2: Greater Wolf Hollow", RecommendedQi = 3000 },
+	{ Name = "Zone 3: Wolf King's Lair", RecommendedQi = 30000 },
+} :: { ZoneInfo }
+
+--------------------------------------------------------------------------
+-- Beasts. Plain blocks for now; looks come later.
 -- Spawn markers: any part tagged "BeastSpawn" with a text attribute "Beast"
--- set to one of the ids below (e.g. "Hare") spawns that beast and respawns it.
+-- set to one of the ids below (e.g. "QiWolf") spawns that beast and respawns it.
 --------------------------------------------------------------------------
 Config.BeastSpawnTag = "BeastSpawn"
-Config.BeastRespawnTime = 5 -- seconds after a marker's beast dies
+Config.BeastRespawnTime = 5 -- seconds after a marker's beast dies (unless the beast sets its own)
 
 export type BeastInfo = {
 	Name: string,
+	Zone: number, -- which entry of Config.Zones it lives in (sets its health)
+	HealthScale: number, -- x the zone's beast health (bosses are tougher)
 	Color: Color3,
 	Size: Vector3,
-	MaxHealth: number,
 	WalkSpeed: number,
 	Damage: number, -- per hit on the player
 	AttackCooldown: number, -- seconds between hits
@@ -89,47 +115,117 @@ export type BeastInfo = {
 	AggroRange: number, -- starts chasing players this close
 	LeashRange: number, -- gives up and walks home past this distance from home
 	WanderRadius: number,
-	SpiritStones: number, -- given straight to the killer (every beast also drops 1 core)
+	SpiritStones: number, -- given straight to the killer
+	Core: string, -- core type it drops (an id in Config.Cores); every beast drops exactly 1
+	LuckBonus: number?, -- extra luck for its core's grade roll (0.15 = +15%)
+	RespawnTime: number?, -- seconds, instead of Config.BeastRespawnTime
+	Boss: boolean?, -- adds "BOSS" to its name
 }
 
 Config.Beasts = {
-	Hare = {
-		Name = "Practice Hare",
-		Color = Color3.fromRGB(230, 230, 220),
-		Size = Vector3.new(2, 2, 3),
-		MaxHealth = 10,
-		WalkSpeed = 12,
-		Damage = 5,
-		AttackCooldown = 1.5,
+	QiWolf = {
+		Name = "Qi Wolf",
+		Zone = 1,
+		HealthScale = 1,
+		Color = Color3.fromRGB(110, 110, 125),
+		Size = Vector3.new(2, 2.5, 4),
+		WalkSpeed = 14,
+		Damage = 8,
+		AttackCooldown = 1.2,
 		AttackRange = 3,
-		AggroRange = 20,
+		AggroRange = 22,
 		LeashRange = 50,
 		WanderRadius = 12,
-		SpiritStones = 1,
+		SpiritStones = 3,
+		Core = "WolfCore",
 	},
-	Boar = {
-		Name = "Practice Boar",
-		Color = Color3.fromRGB(120, 80, 60),
-		Size = Vector3.new(4, 4, 6),
-		MaxHealth = 60,
-		WalkSpeed = 10,
-		Damage = 15,
-		AttackCooldown = 2,
+	GreaterQiWolf = {
+		Name = "Greater Qi Wolf",
+		Zone = 2,
+		HealthScale = 1,
+		Color = Color3.fromRGB(70, 70, 90),
+		Size = Vector3.new(3, 3.5, 5.5),
+		WalkSpeed = 15,
+		Damage = 40,
+		AttackCooldown = 1.2,
 		AttackRange = 3,
 		AggroRange = 25,
-		LeashRange = 50,
+		LeashRange = 55,
 		WanderRadius = 12,
-		SpiritStones = 5,
+		SpiritStones = 15,
+		Core = "GreaterWolfCore",
+	},
+	WolfKing = {
+		Name = "Wolf King",
+		Zone = 3,
+		HealthScale = 3,
+		Color = Color3.fromRGB(40, 40, 60),
+		Size = Vector3.new(5, 5, 8),
+		WalkSpeed = 13,
+		Damage = 150,
+		AttackCooldown = 1.5,
+		AttackRange = 4,
+		AggroRange = 30,
+		LeashRange = 60,
+		WanderRadius = 8,
+		SpiritStones = 60,
+		Core = "WolfKingCore",
+		LuckBonus = 0.15,
+		RespawnTime = 30,
+		Boss = true,
 	},
 } :: { [string]: BeastInfo }
 
 -- Order of the DEV panel "Spawn" buttons.
-Config.BeastOrder = { "Hare", "Boar" }
+Config.BeastOrder = { "QiWolf", "GreaterQiWolf", "WolfKing" }
+
+--------------------------------------------------------------------------
+-- Beast cores. Each core type has a base sell price. Every dropped core rolls a grade,
+-- and the grade multiplies the price. Grades go from F (common) to SSS (very rare).
+-- Chance of a grade = its Weight / all weights. Luck makes higher grades likelier:
+-- grade number n (F = 0, E = 1, ... SSS = 8) gets its weight x (1 + luck) ^ n.
+--------------------------------------------------------------------------
+export type CoreInfo = {
+	Name: string,
+	SellPrice: number, -- spirit stones for an F-grade core
+}
+
+Config.Cores = {
+	WolfCore = { Name = "Wolf Core", SellPrice = 2 },
+	GreaterWolfCore = { Name = "Greater Wolf Core", SellPrice = 10 },
+	WolfKingCore = { Name = "Wolf King Core", SellPrice = 50 },
+} :: { [string]: CoreInfo }
+
+-- Order core types appear in the Sell tab.
+Config.CoreOrder = { "WolfCore", "GreaterWolfCore", "WolfKingCore" }
+
+export type GradeInfo = {
+	Name: string,
+	Weight: number, -- chance before luck (weights don't need to add up to 100)
+	PriceMultiplier: number,
+	Color: Color3,
+}
+
+-- From most common to rarest.
+Config.CoreGrades = {
+	{ Name = "F", Weight = 40, PriceMultiplier = 1, Color = Color3.fromRGB(150, 150, 150) },
+	{ Name = "E", Weight = 25, PriceMultiplier = 1.5, Color = Color3.fromRGB(220, 220, 220) },
+	{ Name = "D", Weight = 15, PriceMultiplier = 2, Color = Color3.fromRGB(120, 220, 120) },
+	{ Name = "C", Weight = 10, PriceMultiplier = 3, Color = Color3.fromRGB(80, 200, 255) },
+	{ Name = "B", Weight = 5, PriceMultiplier = 5, Color = Color3.fromRGB(80, 120, 255) },
+	{ Name = "A", Weight = 3, PriceMultiplier = 8, Color = Color3.fromRGB(180, 80, 255) },
+	{ Name = "S", Weight = 1.5, PriceMultiplier = 15, Color = Color3.fromRGB(255, 200, 50) },
+	{ Name = "SS", Weight = 0.4, PriceMultiplier = 40, Color = Color3.fromRGB(255, 120, 40) },
+	{ Name = "SSS", Weight = 0.1, PriceMultiplier = 100, Color = Color3.fromRGB(255, 50, 80) },
+} :: { GradeInfo }
+
+Config.RareGrade = 6 -- index in CoreGrades (6 = A); picking up this grade or higher gets a "Rare!" message
 
 --------------------------------------------------------------------------
 -- Loot. Every beast drops exactly one beast core as a pickup; only the killer can pick it up,
 -- by holding the pickup key (E on PC, a button on phones).
--- Cores use the "BeastCoreModel" mesh in ServerStorage if it exists, else a plain ball.
+-- Cores use the "BeastCoreModel" mesh in ServerStorage if it exists, else a plain ball,
+-- colored by grade.
 -- Players can carry CoreCap cores (more with the Pockets upgrade). Spirit stones have no cap.
 --------------------------------------------------------------------------
 Config.Loot = {
@@ -196,8 +292,6 @@ Config.Manuals = {
 -- Order manuals appear in the Buy tab.
 Config.ManualOrder = { "FistFoundation", "StoneFistFoundation", "PalmStrike", "BreathingTechnique" }
 
-Config.CoreSellPrice = 2 -- spirit stones per beast core
-
 -- Levelled upgrades. Cost of the next level = BaseCost x CostGrowth ^ (current level).
 -- ComingSoon upgrades are shown greyed out and can't be bought.
 export type UpgradeInfo = {
@@ -229,12 +323,11 @@ Config.Upgrades = {
 	},
 	Luck = {
 		Name = "Luck",
-		Description = "Coming soon",
-		BaseCost = 0,
-		CostGrowth = 1,
-		MaxLevel = 0,
-		PerLevel = 0,
-		ComingSoon = true,
+		Description = "+2% luck for better core grades",
+		BaseCost = 20,
+		CostGrowth = 1.7,
+		MaxLevel = 10,
+		PerLevel = 0.02, -- extra luck per level (see Config.CoreGrades)
 	},
 } :: { [string]: UpgradeInfo }
 

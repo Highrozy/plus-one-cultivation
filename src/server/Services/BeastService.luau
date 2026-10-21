@@ -3,7 +3,7 @@
 -- Beasts wander near home, chase players who come close (or hit them), hit back,
 -- and walk home if they're pulled too far away.
 -- Beasts come from parts tagged Config.BeastSpawnTag (respawn after death)
--- or from the DEV panel (no respawn).
+-- or from the DEV panel (no respawn). Also labels zone signs (Config.ZoneSignTag).
 
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
@@ -13,6 +13,7 @@ local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
+local Formulas = require(ReplicatedStorage.Shared.Formulas)
 local LootService = require(script.Parent.LootService)
 
 export type Beast = {
@@ -22,6 +23,7 @@ export type Beast = {
 	Root: BasePart,
 	Humanoid: Humanoid,
 	Fill: Frame,
+	MaxHealth: number,
 	Health: number,
 	Home: Vector3,
 	Marker: BasePart?,
@@ -120,7 +122,7 @@ local function buildModel(info: Config.BeastInfo): (Model, BasePart, Humanoid, F
 	nameLabel.TextScaled = true
 	nameLabel.TextColor3 = Color3.new(1, 1, 1)
 	nameLabel.TextStrokeTransparency = 0.4
-	nameLabel.Text = info.Name
+	nameLabel.Text = if info.Boss then `BOSS: {info.Name}` else info.Name
 	nameLabel.Parent = billboard
 
 	local bar = Instance.new("Frame")
@@ -185,7 +187,8 @@ function BeastService.Spawn(id: string, position: Vector3, marker: BasePart?): B
 		Root = root,
 		Humanoid = humanoid,
 		Fill = fill,
-		Health = info.MaxHealth,
+		MaxHealth = Formulas.BeastMaxHealth(info),
+		Health = Formulas.BeastMaxHealth(info),
 		Home = position,
 		Marker = marker,
 		Target = nil,
@@ -213,7 +216,7 @@ function BeastService.FindNearest(position: Vector3, range: number): Beast?
 end
 
 local function updateBar(beast: Beast)
-	beast.Fill.Size = UDim2.fromScale(math.clamp(beast.Health / beast.Info.MaxHealth, 0, 1), 1)
+	beast.Fill.Size = UDim2.fromScale(math.clamp(beast.Health / beast.MaxHealth, 0, 1), 1)
 end
 
 -- Takes a beast out of the world. Marker beasts come back after the respawn time.
@@ -227,7 +230,7 @@ local function remove(beast: Beast)
 
 	local marker = beast.Marker
 	if marker then
-		task.delay(Config.BeastRespawnTime, function()
+		task.delay(beast.Info.RespawnTime or Config.BeastRespawnTime, function()
 			if marker:IsDescendantOf(workspace) then
 				BeastService.Spawn(beast.Id, marker.Position, marker)
 			end
@@ -296,7 +299,7 @@ local function think(beast: Beast, now: number)
 		humanoid:MoveTo(beast.Home)
 		if flatDistance(position, beast.Home) < 3 then
 			beast.Returning = false
-			beast.Health = info.MaxHealth -- heals up once it's back home
+			beast.Health = beast.MaxHealth -- heals up once it's back home
 			updateBar(beast)
 		end
 		return
@@ -342,7 +345,43 @@ local function watchMarker(marker: Instance)
 	BeastService.Spawn(id, marker.Position, marker)
 end
 
+-- Zone name and recommended qi floating over each zone sign.
+local function labelZoneSign(sign: Instance)
+	local zone = sign:GetAttribute("Zone")
+	local info = typeof(zone) == "number" and Config.Zones[zone]
+	if not sign:IsA("BasePart") or not info then
+		warn(`[BeastService] {sign:GetFullName()} needs a number attribute "Zone" (1-{#Config.Zones})`)
+		return
+	end
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "ZoneLabel"
+	billboard.Size = UDim2.fromOffset(260, 60)
+	billboard.StudsOffset = Vector3.new(0, sign.Size.Y / 2 + 3, 0)
+	billboard.AlwaysOnTop = true
+	billboard.MaxDistance = 200
+	billboard.Parent = sign
+
+	local lines = { info.Name, `Recommended {Config.Names.Qi}: {Format.Number(info.RecommendedQi)}` }
+	for index, text in lines do
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.Position = UDim2.fromScale(0, (index - 1) * 0.5)
+		label.Size = UDim2.fromScale(1, 0.5)
+		label.Font = Enum.Font.GothamBold
+		label.TextScaled = true
+		label.TextColor3 = if index == 1 then Color3.new(1, 1, 1) else Color3.fromRGB(120, 220, 255)
+		label.TextStrokeTransparency = 0.3
+		label.Text = text
+		label.Parent = billboard
+	end
+end
+
 function BeastService.Init()
+	for _, sign in CollectionService:GetTagged(Config.ZoneSignTag) do
+		labelZoneSign(sign)
+	end
+	CollectionService:GetInstanceAddedSignal(Config.ZoneSignTag):Connect(labelZoneSign)
+
 	folder = Instance.new("Folder")
 	folder.Name = "Beasts"
 	folder.Parent = workspace
