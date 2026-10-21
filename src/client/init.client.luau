@@ -9,6 +9,7 @@ local ORDER = {
 	"HudController",
 	"BreakthroughController",
 	"ShopController",
+	"RebirthController",
 	"CorePickupController",
 	"NotifyController",
 	"DevPanelController",

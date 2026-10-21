@@ -2,7 +2,7 @@
 -- Remotes: every RemoteEvent in one list. The server creates them; the client waits for them.
 --
 -- Client -> server (intents only, the server validates everything):
---   Click, DevCommand(name, arg?) [Studio only], Shop(action, id)
+--   Click, DevCommand(name, arg?) [Studio only], Shop(action, id), Rebirth
 -- Server -> client:
 --   Notify(message)
 
@@ -13,6 +13,7 @@ local NAMES = {
 	"Click",
 	"DevCommand",
 	"Shop",
+	"Rebirth",
 	"Notify",
 }
 

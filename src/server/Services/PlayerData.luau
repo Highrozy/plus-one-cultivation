@@ -15,6 +15,8 @@ export type Data = {
 	BeastCores: number,
 	Manuals: { [string]: boolean }, -- owned manual ids
 	Upgrades: { [string]: number }, -- upgrade id -> level
+	Rebirths: number,
+	RebirthBonus: number, -- total qi-per-tap bonus from rebirths (1 = +100%)
 }
 
 local PlayerData = {}
@@ -35,6 +37,8 @@ function PlayerData.Sync(player: Player)
 	player:SetAttribute("Stage", data.Stage)
 	player:SetAttribute("SpiritStones", data.SpiritStones)
 	player:SetAttribute("BeastCores", data.BeastCores)
+	player:SetAttribute("Rebirths", data.Rebirths)
+	player:SetAttribute("RebirthBonus", data.RebirthBonus)
 	-- Manuals show up as "Manual_<id>" = true, upgrades as "Upgrade_<id>" = level.
 	for id in Config.Manuals do
 		player:SetAttribute(`Manual_{id}`, data.Manuals[id] == true)
@@ -45,8 +49,16 @@ function PlayerData.Sync(player: Player)
 end
 
 function PlayerData.Reset(player: Player)
-	dataByPlayer[player] =
-		{ Qi = 0, Stage = 1, SpiritStones = 0, BeastCores = 0, Manuals = {}, Upgrades = {} }
+	dataByPlayer[player] = {
+		Qi = 0,
+		Stage = 1,
+		SpiritStones = 0,
+		BeastCores = 0,
+		Manuals = {},
+		Upgrades = {},
+		Rebirths = 0,
+		RebirthBonus = 0,
+	}
 	PlayerData.Sync(player)
 end
 

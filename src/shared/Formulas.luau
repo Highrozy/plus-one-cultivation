@@ -9,6 +9,8 @@ export type State = {
 	Stage: number,
 	Manuals: { [string]: boolean }, -- owned manual ids
 	Upgrades: { [string]: number }, -- upgrade id -> level
+	Rebirths: number,
+	RebirthBonus: number, -- total qi-per-tap bonus from rebirths (1 = +100%)
 }
 
 local Formulas = {}
@@ -64,7 +66,19 @@ end
 
 function Formulas.QiPerClick(state: State): number
 	local boost = 1 + Formulas.UpgradeLevel(state, "TrainingBoost") * Config.Upgrades.TrainingBoost.PerLevel
-	return Config.Click.BaseQi * Formulas.StageMultiplier(state.Stage) * boost
+	return Config.Click.BaseQi * Formulas.StageMultiplier(state.Stage) * boost * (1 + state.RebirthBonus)
+end
+
+-- Spirit stones needed for the next rebirth.
+function Formulas.RebirthCost(state: State): number
+	local rebirth = Config.Rebirth
+	return math.floor(rebirth.BaseCost * rebirth.CostGrowth ^ state.Rebirths)
+end
+
+-- Bonus a rebirth right now would add (0.5 = +50% qi per tap).
+function Formulas.RebirthGain(state: State): number
+	local rebirth = Config.Rebirth
+	return state.Stage * rebirth.BonusPerStage * rebirth.BonusDecay ^ state.Rebirths
 end
 
 -- Total bonus damage percent from owned foundation manuals (they add together: 5 + 25 = 30%).

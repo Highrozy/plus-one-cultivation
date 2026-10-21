@@ -101,6 +101,8 @@ function Ui.State()
 		BeastCores = player:GetAttribute("BeastCores") or 0,
 		Manuals = manuals,
 		Upgrades = upgrades,
+		Rebirths = player:GetAttribute("Rebirths") or 0,
+		RebirthBonus = player:GetAttribute("RebirthBonus") or 0,
 	}
 end
 

@@ -244,6 +244,21 @@ Config.Upgrades = {
 
 Config.UpgradeOrder = { "Pockets", "TrainingBoost", "Luck" }
 
+--------------------------------------------------------------------------
+-- Rebirth. Spend spirit stones to reset qi and stage (stones, cores, manuals and
+-- upgrades are kept) for a permanent qi-per-tap bonus.
+-- Cost of the next rebirth = BaseCost x CostGrowth ^ (rebirths done).
+-- Bonus gained = stage reached x BonusPerStage x BonusDecay ^ (rebirths done),
+-- so each rebirth is worth less per stage than the one before.
+-- Bonuses add together: +100% then +85% = +185% (x2.85 qi per tap).
+--------------------------------------------------------------------------
+Config.Rebirth = {
+	BaseCost = 100,
+	CostGrowth = 2.5,
+	BonusPerStage = 0.1, -- +10% qi per tap per stage reached, on the first rebirth
+	BonusDecay = 0.85, -- each rebirth makes the next one worth 15% less per stage
+}
+
 -- Short messages (e.g. "Not enough Spirit Stones") near the top of the screen.
 Config.Notify = {
 	Lifetime = 2, -- seconds on screen
