@@ -69,6 +69,15 @@ function Formulas.QiPerClick(state: State): number
 	return Config.Click.BaseQi * Formulas.StageMultiplier(state.Stage) * boost * (1 + state.RebirthBonus)
 end
 
+-- Qi per punch on a training dummy of this tier.
+function Formulas.TrainingQi(state: State, tier: number): number
+	return Formulas.QiPerClick(state) * Config.TrainingPads[tier].Multiplier
+end
+
+function Formulas.TrainingUnlocked(state: State, tier: number): boolean
+	return state.Rebirths >= Config.TrainingPads[tier].Rebirths
+end
+
 -- Spirit stones needed for the next rebirth.
 function Formulas.RebirthCost(state: State): number
 	local rebirth = Config.Rebirth

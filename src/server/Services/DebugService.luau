@@ -41,6 +41,11 @@ local COMMANDS: { [string]: (Player, PlayerData.Data, any) -> () } = {
 		data.SpiritStones += 100
 		PlayerData.Sync(player)
 	end,
+	-- Count one more rebirth without resetting or bonus (for testing pad unlocks).
+	AddRebirth = function(player, data)
+		data.Rebirths += 1
+		PlayerData.Sync(player)
+	end,
 	Reset = function(player)
 		PlayerData.Reset(player)
 	end,

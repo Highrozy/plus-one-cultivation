@@ -245,6 +245,30 @@ Config.Upgrades = {
 Config.UpgradeOrder = { "Pockets", "TrainingBoost", "Luck" }
 
 --------------------------------------------------------------------------
+-- Training pads. Any part tagged "TrainingPad" with a number attribute "Tier"
+-- (1 = the first entry below) gets a training dummy in its middle (a child part
+-- named "TrainingDummy" is used if the map already has one, else a plain block).
+-- While a player stands on an unlocked pad, their punches (tap or auto) hit the
+-- dummy instead of beasts, giving qi per tap x Multiplier per punch.
+-- Any number of players can share a pad.
+--------------------------------------------------------------------------
+Config.TrainingPadTag = "TrainingPad"
+Config.TrainingStandHeight = 6 -- studs above a pad's top that still count as standing on it
+
+export type TrainingPadInfo = {
+	Name: string,
+	Multiplier: number, -- x qi per tap, per punch
+	Rebirths: number, -- rebirths needed to use it
+}
+
+Config.TrainingPads = {
+	{ Name = "Training Pad I", Multiplier = 1.5, Rebirths = 0 },
+	{ Name = "Training Pad II", Multiplier = 2, Rebirths = 1 },
+	{ Name = "Training Pad III", Multiplier = 4, Rebirths = 2 },
+	{ Name = "Training Pad IV", Multiplier = 6, Rebirths = 3 },
+} :: { TrainingPadInfo }
+
+--------------------------------------------------------------------------
 -- Rebirth. Spend spirit stones to reset qi and stage (stones, cores, manuals and
 -- upgrades are kept) for a permanent qi-per-tap bonus.
 -- Cost of the next rebirth = BaseCost x CostGrowth ^ (rebirths done).

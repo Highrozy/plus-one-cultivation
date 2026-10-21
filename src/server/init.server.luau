@@ -9,6 +9,7 @@ local ORDER = {
 	"RealmService",
 	"LootService",
 	"BeastService",
+	"TrainingService",
 	"CombatService",
 	"ClickService",
 	"ShopService",

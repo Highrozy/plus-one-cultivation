@@ -4,7 +4,7 @@
 -- Client -> server (intents only, the server validates everything):
 --   Click, DevCommand(name, arg?) [Studio only], Shop(action, id), Rebirth
 -- Server -> client:
---   Notify(message)
+--   Notify(message), TrainingQi(amount)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -15,6 +15,7 @@ local NAMES = {
 	"Shop",
 	"Rebirth",
 	"Notify",
+	"TrainingQi",
 }
 
 local folder: Folder

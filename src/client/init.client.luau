@@ -6,6 +6,7 @@ local Controllers = script.Controllers
 
 local ORDER = {
 	"InputController",
+	"QiPopupController",
 	"HudController",
 	"BreakthroughController",
 	"ShopController",

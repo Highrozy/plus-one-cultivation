@@ -14,6 +14,7 @@ local DevPanelController = {}
 local BUTTONS: { { Text: string, Command: string, Arg: string? } } = {
 	{ Text = "Next Stage", Command = "NextStage" },
 	{ Text = "+100 Stones", Command = "AddStones" },
+	{ Text = "+1 Rebirth", Command = "AddRebirth" },
 	{ Text = "Reset", Command = "Reset" },
 }
 for _, id in Config.BeastOrder do

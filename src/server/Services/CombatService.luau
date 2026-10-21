@@ -3,6 +3,7 @@
 -- A tap punches the nearest beast in range, and auto-punch does the same without
 -- tapping. Both share one timer, so punches never exceed Config.Combat.PunchesPerSecond.
 -- Taps already give qi (ClickService); auto punches give the same qi per punch.
+-- On a training pad, punches hit the pad's dummy instead (TrainingService).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,6 +14,7 @@ local Formulas = require(ReplicatedStorage.Shared.Formulas)
 local BeastService = require(script.Parent.BeastService)
 local PlayerData = require(script.Parent.PlayerData)
 local RealmService = require(script.Parent.RealmService)
+local TrainingService = require(script.Parent.TrainingService)
 
 local CombatService = {}
 
@@ -38,6 +40,11 @@ function CombatService.TryPunch(player: Player, giveQi: boolean?): boolean
 	local now = os.clock()
 	if now - (lastPunch[player] or 0) < 1 / Config.Combat.PunchesPerSecond then
 		return false
+	end
+	-- Standing on an unlocked training pad: punch its dummy instead of beasts.
+	if TrainingService.TryPunchDummy(player, root) then
+		lastPunch[player] = now
+		return true
 	end
 	local beast = BeastService.FindNearest(root.Position, Config.Combat.PunchRange)
 	if not beast then

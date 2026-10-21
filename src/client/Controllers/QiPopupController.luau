@@ -1,12 +1,14 @@
 --!strict
 -- QiPopupController: shows "+5 Qi" at a random spot near the middle of the screen,
--- then floats it up and fades it out. InputController calls Show() on every tap.
+-- then floats it up and fades it out. InputController calls Show() on every tap,
+-- and the server sends one for every training dummy punch.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
+local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Ui = require(script.Parent.Ui)
 
 local QiPopupController = {}
@@ -51,6 +53,9 @@ function QiPopupController.Show(amount: number)
 	end)
 end
 
-function QiPopupController.Init() end
+function QiPopupController.Init()
+	-- Punching a training dummy gives qi from the server, so the popup comes from there.
+	Remotes.Get("TrainingQi").OnClientEvent:Connect(QiPopupController.Show)
+end
 
 return QiPopupController
