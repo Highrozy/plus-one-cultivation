@@ -3,8 +3,6 @@
 -- when they walk off. Buttons only send "buy X" / "sell X"; the server checks everything.
 -- Manual Shop has Buy and Sell tabs; Upgrade Shop has one list.
 
-local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
@@ -16,7 +14,6 @@ local Ui = require(script.Parent.Ui)
 local ShopController = {}
 
 local CHECK_INTERVAL = 0.2 -- seconds between "am I on a pad?" checks
-local PAD_HEIGHT = 6 -- studs above a pad that still count as standing on it
 
 local BUY_COLOR = Color3.fromRGB(60, 140, 70)
 local OFF_COLOR = Color3.fromRGB(80, 80, 90)
@@ -31,30 +28,6 @@ local list: ScrollingFrame
 local openShop: string? = nil
 local tab = "Buy"
 local refreshers: { () -> () } = {}
-
--- The pad the player is standing on, if any.
-local function padUnderPlayer(): BasePart?
-	local character = Players.LocalPlayer.Character
-	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if not root then
-		return nil
-	end
-	for _, pad in CollectionService:GetTagged(Config.ShopPadTag) do
-		if pad:IsA("BasePart") then
-			local localPos = pad.CFrame:PointToObjectSpace(root.Position)
-			local half = pad.Size / 2
-			if
-				math.abs(localPos.X) <= half.X + 1
-				and math.abs(localPos.Z) <= half.Z + 1
-				and localPos.Y >= -half.Y
-				and localPos.Y <= half.Y + PAD_HEIGHT
-			then
-				return pad
-			end
-		end
-	end
-	return nil
-end
 
 local function refresh()
 	for _, update in refreshers do
@@ -155,6 +128,25 @@ local function buildManualsSell()
 				shopRemote:FireServer("SellCores", { Core = id, Grade = grade })
 			end, function()
 				local count = Ui.State().Bag[id][grade]
+				row.Visible = count > 0
+				return `x{count}, {Format.Number(price)} Stones each`,
+					`+{Format.Number(count * price)} Stones`,
+					true
+			end)
+		end
+	end
+
+	-- Pills, strongest first; failed pills after the real ones.
+	for _, failed in { false, true } do
+		for tier = #Config.Pills, 1, -1 do
+			order += 1
+			local price = Formulas.PillSellPrice(tier, failed)
+			local row: Frame
+			row = addRow(order, Formulas.PillName(tier, failed), function()
+				shopRemote:FireServer("SellPills", { Tier = tier, Failed = failed })
+			end, function()
+				local state = Ui.State()
+				local count = if failed then state.FailedPills[tier] else state.Pills[tier]
 				row.Visible = count > 0
 				return `x{count}, {Format.Number(price)} Stones each`,
 					`+{Format.Number(count * price)} Stones`,
@@ -300,7 +292,7 @@ function ShopController.Init()
 	local currentPad: BasePart? = nil
 	task.spawn(function()
 		while true do
-			local pad = padUnderPlayer()
+			local pad = Ui.PadUnderPlayer(Config.ShopPadTag)
 			if pad ~= currentPad then
 				currentPad = pad
 				local shop = pad and pad:GetAttribute("Shop")

@@ -246,6 +246,137 @@ Config.SafeZoneTag = "SafeZone"
 Config.SafeZoneHeight = 20 -- studs above a zone part's top that still count as inside
 
 --------------------------------------------------------------------------
+-- Alchemy. Any part tagged "FurnacePad" opens the furnace while a player stands on it.
+-- There are no recipes: the player puts up to MaxCoreKinds kinds of core (type + grade,
+-- any amount of each) and some spirit stones from their backpack into the furnace.
+-- Every core adds its sell price as essence; every StonesPerEssence stones add 1 essence.
+-- The total essence picks the pill: the highest entry of Pills whose MinEssence it reaches.
+-- Refining uses up the ingredients and starts the brewing minigame:
+--   a flow zone moves clockwise around a ring at changing speeds; holding Space (or the
+--   HOLD button) pushes your tab clockwise, letting go makes it fall back. A bar fills
+--   while your tab is on the flow and drains while it's off. Full bar = minigame won.
+-- Winning gives a real pill with chance SuccessCap (+ luck x LuckToSuccess). Losing the
+-- minigame or the roll gives a failed pill: greyed out, unnamed, FailedFraction of the
+-- qi and sell price. Pills go into the backpack and are kept on rebirth.
+--------------------------------------------------------------------------
+Config.FurnacePadTag = "FurnacePad"
+Config.FurnaceRange = 12 -- studs from a pad's center where refining still works (server check)
+
+export type PillInfo = {
+	Name: string,
+	Rarity: string,
+	Color: Color3,
+	MinEssence: number,
+	Qi: number, -- qi gained by consuming one
+	SellPrice: number, -- spirit stones
+	SuccessCap: number, -- chance of a real pill after winning the minigame (1 = always)
+	FlowSize: number, -- degrees of the ring the flow zone covers (smaller = harder)
+	FlowSpeed: NumberRange, -- degrees per second the flow zone moves (new target picked randomly between)
+	SpeedChangeTime: NumberRange?, -- seconds between speed changes; nil = one steady speed
+}
+
+Config.Alchemy = {
+	MaxCoreKinds = 4,
+	StonesPerEssence = 5,
+	FailedFraction = 0.1, -- a failed pill gives 10% of the qi and sell price
+	LuckToSuccess = 0.5, -- each 1% luck adds 0.5% success chance
+	-- Minigame feel
+	TabSize = 24, -- degrees of the ring your tab covers
+	HoldAcceleration = 300, -- degrees/sec^2 clockwise while holding
+	FallAcceleration = 260, -- degrees/sec^2 counter-clockwise while not holding
+	MaxTabSpeed = 200, -- degrees/sec either way
+	BarStart = 0.3, -- bar starts 30% full
+	BarFill = 0.3, -- per second while on the flow
+	BarDrain = 0.22, -- per second while off the flow
+	SpeedEasing = 2.5, -- how quickly the flow eases into a new speed (higher = snappier)
+	AutoFollowTime = 2, -- seconds at the start where the tab rides the flow by itself (bar paused)
+	-- Warm-up (after auto-follow): everything (flow speed, tab push and fall, bar fill and drain) starts at
+	-- WarmupStart x normal and builds up to normal over WarmupTime seconds.
+	WarmupTime = 3,
+	WarmupStart = 0.3,
+	MinBrewTime = 4, -- seconds (auto-follow included); the server ignores "won" faster than this
+	MaxBrewTime = 60, -- seconds; a brew the client never finished counts as failed after this
+}
+
+-- From weakest to strongest.
+Config.Pills = {
+	{
+		Name = "Qi Gathering Pill",
+		Rarity = "Common",
+		Color = Color3.fromRGB(200, 200, 200),
+		MinEssence = 0,
+		Qi = 300,
+		SellPrice = 3,
+		SuccessCap = 1,
+		FlowSize = 60,
+		FlowSpeed = NumberRange.new(50, 50),
+		SpeedChangeTime = nil, -- steady
+	},
+	{
+		Name = "Spirit Condensing Pill",
+		Rarity = "Uncommon",
+		Color = Color3.fromRGB(120, 220, 120),
+		MinEssence = 30,
+		Qi = 2000,
+		SellPrice = 40,
+		SuccessCap = 0.95,
+		FlowSize = 55,
+		FlowSpeed = NumberRange.new(40, 75),
+		SpeedChangeTime = NumberRange.new(3, 4),
+	},
+	{
+		Name = "Meridian Cleansing Pill",
+		Rarity = "Rare",
+		Color = Color3.fromRGB(80, 160, 255),
+		MinEssence = 150,
+		Qi = 12000,
+		SellPrice = 180,
+		SuccessCap = 0.85,
+		FlowSize = 50,
+		FlowSpeed = NumberRange.new(40, 95),
+		SpeedChangeTime = NumberRange.new(2, 3),
+	},
+	{
+		Name = "Golden Core Pill",
+		Rarity = "Epic",
+		Color = Color3.fromRGB(180, 80, 255),
+		MinEssence = 750,
+		Qi = 75000,
+		SellPrice = 900,
+		SuccessCap = 0.7,
+		FlowSize = 46,
+		FlowSpeed = NumberRange.new(40, 115),
+		SpeedChangeTime = NumberRange.new(1.5, 2.5),
+	},
+	{
+		Name = "Nascent Soul Pill",
+		Rarity = "Legendary",
+		Color = Color3.fromRGB(255, 200, 50),
+		MinEssence = 4000,
+		Qi = 400000,
+		SellPrice = 4800,
+		SuccessCap = 0.55,
+		FlowSize = 42,
+		FlowSpeed = NumberRange.new(35, 135),
+		SpeedChangeTime = NumberRange.new(1, 1.8),
+	},
+	{
+		Name = "Heavenly Origin Pill",
+		Rarity = "Mythic",
+		Color = Color3.fromRGB(255, 60, 90),
+		MinEssence = 20000,
+		Qi = 2000000,
+		SellPrice = 24000,
+		SuccessCap = 0.4,
+		FlowSize = 38,
+		FlowSpeed = NumberRange.new(30, 155),
+		SpeedChangeTime = NumberRange.new(0.6, 1.3),
+	},
+} :: { PillInfo }
+
+Config.FailedPillColor = Color3.fromRGB(110, 110, 110)
+
+--------------------------------------------------------------------------
 -- Shops. Any part tagged "ShopPad" with a text attribute "Shop" set to
 -- "Manuals" or "Upgrades" opens that shop while a player stands on it.
 --------------------------------------------------------------------------

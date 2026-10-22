@@ -16,6 +16,8 @@ export type Data = {
 	Cores: { [string]: { [number]: number } }, -- pockets: core id -> grade index -> count
 	BagCores: number, -- total in the backpack (always the sum of Bag)
 	Bag: { [string]: { [number]: number } }, -- backpack (no cap): core id -> grade index -> count
+	Pills: { [number]: number }, -- backpack: pill tier (index in Config.Pills) -> count
+	FailedPills: { [number]: number }, -- backpack: tier the pill was meant to be -> count
 	Manuals: { [string]: boolean }, -- owned manual ids
 	Upgrades: { [string]: number }, -- upgrade id -> level
 	Rebirths: number,
@@ -60,6 +62,17 @@ function PlayerData.Sync(player: Player)
 			player:SetAttribute(`Bag_{id}_{grade}`, bagGrades[grade] or 0)
 		end
 	end
+	-- Pills show up as "Pill_<tier>" and "FailedPill_<tier>" = count.
+	for tier in Config.Pills do
+		player:SetAttribute(`Pill_{tier}`, data.Pills[tier] or 0)
+		player:SetAttribute(`FailedPill_{tier}`, data.FailedPills[tier] or 0)
+	end
+end
+
+-- Add (or remove, with a negative amount) pills of one tier to the backpack.
+function PlayerData.AddPills(data: Data, tier: number, failed: boolean, amount: number)
+	local pills = if failed then data.FailedPills else data.Pills
+	pills[tier] = (pills[tier] or 0) + amount
 end
 
 -- Add (or remove, with a negative amount) cores of one type and grade to the pockets.
@@ -101,6 +114,8 @@ function PlayerData.Reset(player: Player)
 		Cores = {},
 		BagCores = 0,
 		Bag = {},
+		Pills = {},
+		FailedPills = {},
 		Manuals = {},
 		Upgrades = {},
 		Rebirths = 0,

@@ -1,12 +1,16 @@
 --!strict
 -- BackpackController: a Backpack button on the right that opens a list of everything
--- in the player's backpack (rarest cores first). Read-only for now; the furnace and
--- the Sell tab are where backpack items get used.
+-- in the player's backpack: pills (strongest first, failed ones greyed out) then cores
+-- (rarest first). The furnace and the Sell tab are where backpack items get used.
+-- In Studio, pills have a DEV "Eat" button until the seclusion cave exists.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local Format = require(ReplicatedStorage.Shared.Format)
 local Formulas = require(ReplicatedStorage.Shared.Formulas)
+local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Ui = require(script.Parent.Ui)
 
 local BackpackController = {}
@@ -14,16 +18,34 @@ local BackpackController = {}
 local panel: Frame
 local list: ScrollingFrame
 local emptyLabel: TextLabel
-local rows: { { Id: string, Grade: number, Label: TextLabel } } = {}
+-- Each row: its label, its text, and how many of the item the player has.
+local rows: { { Label: TextLabel, Text: string, Count: (any) -> number } } = {}
 
 local function refresh()
 	local state = Ui.State()
+	local any = false
 	for _, row in rows do
-		local count = state.Bag[row.Id][row.Grade]
+		local count = row.Count(state)
 		row.Label.Visible = count > 0
-		row.Label.Text = `  {Formulas.CoreName(row.Id, row.Grade)}  x{count}`
+		row.Label.Text = `  {row.Text}  x{count}`
+		any = any or count > 0
 	end
-	emptyLabel.Visible = state.BagCores == 0
+	emptyLabel.Visible = not any
+end
+
+local function addRow(order: number, text: string, color: Color3, count: (any) -> number): TextLabel
+	local label = Ui.Label({
+		BackgroundTransparency = 0,
+		BackgroundColor3 = Color3.fromRGB(40, 40, 50),
+		TextColor3 = color,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Size = UDim2.new(1, -8, 0, 40),
+		LayoutOrder = order,
+		Parent = list,
+	})
+	Ui.Corner(8).Parent = label
+	table.insert(rows, { Label = label, Text = text, Count = count })
+	return label
 end
 
 function BackpackController.Init()
@@ -80,6 +102,8 @@ function BackpackController.Init()
 	})
 	emptyLabel = Ui.Label({
 		Text = "Empty. Bring cores back to the safe zone.",
+		TextScaled = false,
+		TextSize = 18,
 		TextColor3 = Color3.fromRGB(200, 200, 210),
 		Font = Enum.Font.Gotham,
 		Size = UDim2.new(1, -8, 0, 30),
@@ -87,22 +111,41 @@ function BackpackController.Init()
 		Parent = list,
 	})
 
-	-- One row per core type and grade, rarest grade first.
+	-- Pills first (strongest first, failed ones after), then one row per core type and grade.
+	local devCommand = Remotes.Get("DevCommand")
 	local order = 0
+	for _, failed in { false, true } do
+		for tier = #Config.Pills, 1, -1 do
+			order += 1
+			local color = if failed then Config.FailedPillColor else Config.Pills[tier].Color
+			local text = `{Formulas.PillName(tier, failed)}`
+			if not failed then
+				text ..= ` (+{Format.Number(Formulas.PillQi(tier, false))} {Config.Names.Qi})`
+			end
+			local label = addRow(order, text, color, function(state)
+				return if failed then state.FailedPills[tier] else state.Pills[tier]
+			end)
+			if RunService:IsStudio() then
+				local eat = Ui.Button({
+					Text = "Eat (DEV)",
+					BackgroundColor3 = Color3.fromRGB(90, 60, 140),
+					AnchorPoint = Vector2.new(1, 0.5),
+					Position = UDim2.new(1, -4, 0.5, 0),
+					Size = UDim2.fromOffset(110, 34),
+					Parent = label,
+				})
+				eat.Activated:Connect(function()
+					devCommand:FireServer("EatPill", { Tier = tier, Failed = failed })
+				end)
+			end
+		end
+	end
 	for _, id in Config.CoreOrder do
 		for grade = #Config.CoreGrades, 1, -1 do
 			order += 1
-			local label = Ui.Label({
-				BackgroundTransparency = 0,
-				BackgroundColor3 = Color3.fromRGB(40, 40, 50),
-				TextColor3 = Config.CoreGrades[grade].Color,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = UDim2.new(1, -8, 0, 40),
-				LayoutOrder = order,
-				Parent = list,
-			})
-			Ui.Corner(8).Parent = label
-			table.insert(rows, { Id = id, Grade = grade, Label = label })
+			addRow(order, Formulas.CoreName(id, grade), Config.CoreGrades[grade].Color, function(state)
+				return state.Bag[id][grade]
+			end)
 		end
 	end
 

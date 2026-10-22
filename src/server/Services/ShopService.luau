@@ -80,6 +80,25 @@ local ACTIONS: { [string]: { Shop: string, Run: (Player, PlayerData.Data, any) -
 			notify:FireClient(player, `Sold for {earned} {Config.Names.SpiritStones}`)
 		end,
 	},
+	-- which: { Tier = n, Failed = bool } sells every pill of that tier (failed or not) in the backpack
+	SellPills = {
+		Shop = "Manuals",
+		Run = function(player, data, which)
+			if typeof(which) ~= "table" or typeof(which.Tier) ~= "number" or not Config.Pills[which.Tier] then
+				return
+			end
+			local failed = which.Failed == true
+			local pills = if failed then data.FailedPills else data.Pills
+			local count = pills[which.Tier] or 0
+			if count <= 0 then
+				return
+			end
+			local earned = count * Formulas.PillSellPrice(which.Tier, failed)
+			PlayerData.AddPills(data, which.Tier, failed, -count)
+			data.SpiritStones += earned
+			notify:FireClient(player, `Sold for {earned} {Config.Names.SpiritStones}`)
+		end,
+	},
 	BuyUpgrade = {
 		Shop = "Upgrades",
 		Run = function(player, data, id)

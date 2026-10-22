@@ -1,12 +1,15 @@
 --!strict
 -- Ui: tiny helpers for building greybox UI in code.
 
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 
 local Ui = {}
+
+local PAD_HEIGHT = 6 -- studs above a pad that still count as standing on it
 
 -- Create an instance, set its properties, and parent any children.
 function Ui.New(className: string, props: { [string]: any }?, children: { Instance }?): any
@@ -104,6 +107,12 @@ function Ui.State()
 			bag[id][grade] = player:GetAttribute(`Bag_{id}_{grade}`) or 0
 		end
 	end
+	local pills = {}
+	local failedPills = {}
+	for tier in Config.Pills do
+		pills[tier] = player:GetAttribute(`Pill_{tier}`) or 0
+		failedPills[tier] = player:GetAttribute(`FailedPill_{tier}`) or 0
+	end
 	return {
 		Qi = player:GetAttribute("Qi") or 0,
 		Stage = player:GetAttribute("Stage") or 1,
@@ -112,11 +121,37 @@ function Ui.State()
 		Cores = cores,
 		BagCores = player:GetAttribute("BagCores") or 0,
 		Bag = bag,
+		Pills = pills,
+		FailedPills = failedPills,
 		Manuals = manuals,
 		Upgrades = upgrades,
 		Rebirths = player:GetAttribute("Rebirths") or 0,
 		RebirthBonus = player:GetAttribute("RebirthBonus") or 0,
 	}
+end
+
+-- The part with this tag the player is standing on, if any.
+function Ui.PadUnderPlayer(tag: string): BasePart?
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		return nil
+	end
+	for _, pad in CollectionService:GetTagged(tag) do
+		if pad:IsA("BasePart") then
+			local localPos = pad.CFrame:PointToObjectSpace(root.Position)
+			local half = pad.Size / 2
+			if
+				math.abs(localPos.X) <= half.X + 1
+				and math.abs(localPos.Z) <= half.Z + 1
+				and localPos.Y >= -half.Y
+				and localPos.Y <= half.Y + PAD_HEIGHT
+			then
+				return pad
+			end
+		end
+	end
+	return nil
 end
 
 -- Call `callback` now and whenever any of the player's attributes change.

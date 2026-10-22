@@ -151,6 +151,54 @@ function Formulas.CoreName(coreId: string, grade: number): string
 	return `{Config.CoreGrades[grade].Name}-grade {Config.Cores[coreId].Name}`
 end
 
+-- Furnace ingredients: one entry per core kind put in.
+export type CoreStack = { Core: string, Grade: number, Count: number }
+
+-- Total essence of a furnace load (cores add their sell price, stones add 1 per StonesPerEssence).
+function Formulas.Essence(cores: { CoreStack }, stones: number): number
+	local total = stones / Config.Alchemy.StonesPerEssence
+	for _, stack in cores do
+		total += Formulas.CoreSellPrice(stack.Core, stack.Grade) * stack.Count
+	end
+	return total
+end
+
+-- Which pill (index in Config.Pills) this much essence makes.
+function Formulas.PillTier(essence: number): number
+	local tier = 1
+	for index, pill in Config.Pills do
+		if essence >= pill.MinEssence then
+			tier = index
+		end
+	end
+	return tier
+end
+
+-- Chance of a real pill after winning the minigame.
+function Formulas.PillSuccessChance(state: State, tier: number): number
+	local chance = Config.Pills[tier].SuccessCap + Formulas.Luck(state) * Config.Alchemy.LuckToSuccess
+	return math.min(chance, 1)
+end
+
+function Formulas.PillQi(tier: number, failed: boolean): number
+	local qi = Config.Pills[tier].Qi
+	return if failed then math.floor(qi * Config.Alchemy.FailedFraction) else qi
+end
+
+function Formulas.PillSellPrice(tier: number, failed: boolean): number
+	local price = Config.Pills[tier].SellPrice
+	return if failed then math.max(1, math.floor(price * Config.Alchemy.FailedFraction)) else price
+end
+
+-- Failed pills don't say what they were meant to be.
+function Formulas.PillName(tier: number, failed: boolean): string
+	if failed then
+		return "Failed Pill"
+	end
+	local pill = Config.Pills[tier]
+	return `{pill.Name} ({pill.Rarity})`
+end
+
 -- How many beast cores the player can carry.
 function Formulas.CoreCap(state: State): number
 	return Config.Loot.CoreCap + Formulas.UpgradeLevel(state, "Pockets") * Config.Upgrades.Pockets.PerLevel
