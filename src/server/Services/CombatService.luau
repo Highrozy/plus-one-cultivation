@@ -34,7 +34,7 @@ end
 function CombatService.TryPunch(player: Player, giveQi: boolean?): boolean
 	local data = PlayerData.Get(player)
 	local root = aliveRoot(player)
-	if not data or not root then
+	if not data or not root or player:GetAttribute("Meditating") then
 		return false
 	end
 	local now = os.clock()

@@ -15,6 +15,7 @@ local ORDER = {
 	"ClickService",
 	"ShopService",
 	"AlchemyService",
+	"SeclusionService",
 	"RebirthService",
 	"DebugService", -- Studio-only test shortcuts
 }

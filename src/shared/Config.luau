@@ -273,6 +273,7 @@ export type PillInfo = {
 	FlowSize: number, -- degrees of the ring the flow zone covers (smaller = harder)
 	FlowSpeed: NumberRange, -- degrees per second the flow zone moves (new target picked randomly between)
 	SpeedChangeTime: NumberRange?, -- seconds between speed changes; nil = one steady speed
+	AbsorbTime: number, -- seconds to absorb one in the seclusion cave
 }
 
 Config.Alchemy = {
@@ -311,6 +312,7 @@ Config.Pills = {
 		FlowSize = 60,
 		FlowSpeed = NumberRange.new(50, 50),
 		SpeedChangeTime = nil, -- steady
+		AbsorbTime = 3,
 	},
 	{
 		Name = "Spirit Condensing Pill",
@@ -323,6 +325,7 @@ Config.Pills = {
 		FlowSize = 55,
 		FlowSpeed = NumberRange.new(40, 75),
 		SpeedChangeTime = NumberRange.new(3, 4),
+		AbsorbTime = 4,
 	},
 	{
 		Name = "Meridian Cleansing Pill",
@@ -335,6 +338,7 @@ Config.Pills = {
 		FlowSize = 50,
 		FlowSpeed = NumberRange.new(40, 95),
 		SpeedChangeTime = NumberRange.new(2, 3),
+		AbsorbTime = 5,
 	},
 	{
 		Name = "Golden Core Pill",
@@ -347,6 +351,7 @@ Config.Pills = {
 		FlowSize = 46,
 		FlowSpeed = NumberRange.new(40, 115),
 		SpeedChangeTime = NumberRange.new(1.5, 2.5),
+		AbsorbTime = 6,
 	},
 	{
 		Name = "Nascent Soul Pill",
@@ -359,6 +364,7 @@ Config.Pills = {
 		FlowSize = 42,
 		FlowSpeed = NumberRange.new(35, 135),
 		SpeedChangeTime = NumberRange.new(1, 1.8),
+		AbsorbTime = 8,
 	},
 	{
 		Name = "Heavenly Origin Pill",
@@ -371,10 +377,31 @@ Config.Pills = {
 		FlowSize = 38,
 		FlowSpeed = NumberRange.new(30, 155),
 		SpeedChangeTime = NumberRange.new(0.6, 1.3),
+		AbsorbTime = 10,
 	},
 } :: { PillInfo }
 
 Config.FailedPillColor = Color3.fromRGB(110, 110, 110)
+
+--------------------------------------------------------------------------
+-- Seclusion cave. Stepping onto any part tagged "SeclusionPad" starts meditating:
+-- the character floats above the pad, the camera faces them, and a list of pills
+-- shows on the left. Meditating gives a slow trickle of qi (PassiveTaps taps' worth
+-- per second). Consuming a pill absorbs its qi over the pill's AbsorbTime (energy
+-- flows into the dantian). Pills consumed while one is absorbing wait in a queue; leaving
+-- early loses the rest of the current pill and gives the queued ones back.
+-- No tapping or punching while meditating. The pad's front (LookVector) should face
+-- the cave entrance: the character faces that way, and Leave puts them down there.
+--------------------------------------------------------------------------
+Config.SeclusionPadTag = "SeclusionPad"
+Config.Seclusion = {
+	PassiveTaps = 0.5, -- passive qi per second = this x qi per tap
+	FailedAbsorbTime = 2, -- seconds to absorb a failed pill
+	MaxQueue = 100, -- pills that can wait behind the one absorbing
+	FloatHeight = 4, -- studs the character's root floats above the pad's top
+	CameraDistance = 11, -- studs in front of the character
+	CameraSideShift = 3, -- studs the camera moves left, so the character sits right of the pill list
+}
 
 --------------------------------------------------------------------------
 -- Shops. Any part tagged "ShopPad" with a text attribute "Shop" set to

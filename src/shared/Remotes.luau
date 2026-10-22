@@ -3,9 +3,12 @@
 --
 -- Client -> server (intents only, the server validates everything):
 --   Click, DevCommand(name, arg?) [Studio only], Shop(action, id), Rebirth,
---   Furnace("Refine", { Cores = { CoreStack }, Stones = n } | "Finish", won)
+--   Furnace("Refine", { Cores = { CoreStack }, Stones = n } | "Finish", won),
+--   Seclusion("Enter" | "Leave" | "Consume", { Tier = n, Failed = bool } | "Unqueue", index | "All")
 -- Server -> client:
---   Notify(message), TrainingQi(amount), BrewStart(tier)
+--   Notify(message), TrainingQi(amount), BrewStart(tier),
+--   Seclusion("Entered" | "Left" | "Qi", amount | "Absorb", tier, failed, seconds | "AbsorbEnd"
+--     | "Queue", { { Tier = n, Failed = bool } })
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -19,6 +22,7 @@ local NAMES = {
 	"TrainingQi",
 	"Furnace",
 	"BrewStart",
+	"Seclusion",
 }
 
 local folder: Folder

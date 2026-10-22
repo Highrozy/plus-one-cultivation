@@ -185,6 +185,16 @@ function Formulas.PillQi(tier: number, failed: boolean): number
 	return if failed then math.floor(qi * Config.Alchemy.FailedFraction) else qi
 end
 
+-- Seconds to absorb one pill in the seclusion cave.
+function Formulas.PillAbsorbTime(tier: number, failed: boolean): number
+	return if failed then Config.Seclusion.FailedAbsorbTime else Config.Pills[tier].AbsorbTime
+end
+
+-- Qi per second from just meditating in the seclusion cave.
+function Formulas.MeditationQi(state: State): number
+	return Formulas.QiPerClick(state) * Config.Seclusion.PassiveTaps
+end
+
 function Formulas.PillSellPrice(tier: number, failed: boolean): number
 	local price = Config.Pills[tier].SellPrice
 	return if failed then math.max(1, math.floor(price * Config.Alchemy.FailedFraction)) else price

@@ -3,6 +3,7 @@
 -- and shows a "+qi" popup right away, so tapping feels instant.
 -- Throttled here too, so taps the server would ignore aren't sent (or shown) at all.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
@@ -19,8 +20,8 @@ function InputController.Init()
 	local recent: { number } = {}
 
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then
-			return -- tapped a button, the thumbstick, chat, etc.
+		if gameProcessed or Players.LocalPlayer:GetAttribute("Meditating") then
+			return -- tapped a button, the thumbstick, chat, etc. (or meditating: no taps)
 		end
 		local kind = input.UserInputType
 		if kind ~= Enum.UserInputType.MouseButton1 and kind ~= Enum.UserInputType.Touch then

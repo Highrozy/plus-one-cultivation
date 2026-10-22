@@ -16,6 +16,7 @@ local BUTTONS: { { Text: string, Command: string, Arg: string? } } = {
 	{ Text = "+100 Stones", Command = "AddStones" },
 	{ Text = "+1 Rebirth", Command = "AddRebirth" },
 	{ Text = "+5 Pocket Cores", Command = "AddCores" },
+	{ Text = "+1 Each Pill", Command = "AddPills" },
 	{ Text = "Reset", Command = "Reset" },
 }
 for _, id in Config.BeastOrder do

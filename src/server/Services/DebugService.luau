@@ -54,19 +54,13 @@ local COMMANDS: { [string]: (Player, PlayerData.Data, any) -> () } = {
 		end
 		PlayerData.Sync(player)
 	end,
-	-- Consume one pill for its qi (stand-in until the seclusion cave exists).
-	-- arg: { Tier = n, Failed = bool }
-	EatPill = function(player, data, which)
-		if typeof(which) ~= "table" or typeof(which.Tier) ~= "number" or not Config.Pills[which.Tier] then
-			return
+	-- One real pill of every tier, plus one failed Qi Gathering Pill (for testing the seclusion cave).
+	AddPills = function(player, data)
+		for tier in Config.Pills do
+			PlayerData.AddPills(data, tier, false, 1)
 		end
-		local failed = which.Failed == true
-		local pills = if failed then data.FailedPills else data.Pills
-		if (pills[which.Tier] or 0) <= 0 then
-			return
-		end
-		PlayerData.AddPills(data, which.Tier, failed, -1)
-		RealmService.AddQi(player, Formulas.PillQi(which.Tier, failed))
+		PlayerData.AddPills(data, 1, true, 1)
+		PlayerData.Sync(player)
 	end,
 	Reset = function(player)
 		PlayerData.Reset(player)

@@ -13,6 +13,7 @@ local ORDER = {
 	"BackpackController",
 	"BrewController",
 	"FurnaceController",
+	"SeclusionController",
 	"RebirthController",
 	"CorePickupController",
 	"NotifyController",

@@ -39,7 +39,7 @@ end
 function ClickService.Init()
 	Remotes.Get("Click").OnServerEvent:Connect(function(player)
 		local data = PlayerData.Get(player)
-		if not data or not allowClick(player) then
+		if not data or player:GetAttribute("Meditating") or not allowClick(player) then
 			return
 		end
 		RealmService.AddQi(player, Formulas.QiPerClick(data))

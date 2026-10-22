@@ -2,15 +2,13 @@
 -- BackpackController: a Backpack button on the right that opens a list of everything
 -- in the player's backpack: pills (strongest first, failed ones greyed out) then cores
 -- (rarest first). The furnace and the Sell tab are where backpack items get used.
--- In Studio, pills have a DEV "Eat" button until the seclusion cave exists.
+-- Pills are eaten in the seclusion cave (SeclusionController).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Format = require(ReplicatedStorage.Shared.Format)
 local Formulas = require(ReplicatedStorage.Shared.Formulas)
-local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Ui = require(script.Parent.Ui)
 
 local BackpackController = {}
@@ -112,7 +110,6 @@ function BackpackController.Init()
 	})
 
 	-- Pills first (strongest first, failed ones after), then one row per core type and grade.
-	local devCommand = Remotes.Get("DevCommand")
 	local order = 0
 	for _, failed in { false, true } do
 		for tier = #Config.Pills, 1, -1 do
@@ -122,22 +119,9 @@ function BackpackController.Init()
 			if not failed then
 				text ..= ` (+{Format.Number(Formulas.PillQi(tier, false))} {Config.Names.Qi})`
 			end
-			local label = addRow(order, text, color, function(state)
+			addRow(order, text, color, function(state)
 				return if failed then state.FailedPills[tier] else state.Pills[tier]
 			end)
-			if RunService:IsStudio() then
-				local eat = Ui.Button({
-					Text = "Eat (DEV)",
-					BackgroundColor3 = Color3.fromRGB(90, 60, 140),
-					AnchorPoint = Vector2.new(1, 0.5),
-					Position = UDim2.new(1, -4, 0.5, 0),
-					Size = UDim2.fromOffset(110, 34),
-					Parent = label,
-				})
-				eat.Activated:Connect(function()
-					devCommand:FireServer("EatPill", { Tier = tier, Failed = failed })
-				end)
-			end
 		end
 	end
 	for _, id in Config.CoreOrder do
