@@ -127,22 +127,22 @@ local function buildManualsBuy()
 	end
 end
 
--- One "Sell everything" row, then one row per core type and grade the player has
--- (rarest first; rows they have none of are hidden).
+-- One "Sell everything" row, then one row per core type and grade in the backpack
+-- (rarest first; rows they have none of are hidden). Pockets can't be sold from.
 local function buildManualsSell()
 	addRow(1, `Sell all {Config.Names.BeastCores}`, function()
 		shopRemote:FireServer("SellCores", "All")
 	end, function()
 		local state = Ui.State()
 		local total = 0
-		for id, grades in state.Cores do
+		for id, grades in state.Bag do
 			for grade, count in grades do
 				total += count * Formulas.CoreSellPrice(id, grade)
 			end
 		end
-		return `You have {state.BeastCores}/{Formulas.CoreCap(state)}`,
+		return `{state.BagCores} in your {Config.Names.Backpack}`,
 			`+{Format.Number(total)} Stones`,
-			state.BeastCores > 0
+			state.BagCores > 0
 	end)
 
 	local order = 1
@@ -154,7 +154,7 @@ local function buildManualsSell()
 			row = addRow(order, Formulas.CoreName(id, grade), function()
 				shopRemote:FireServer("SellCores", { Core = id, Grade = grade })
 			end, function()
-				local count = Ui.State().Cores[id][grade]
+				local count = Ui.State().Bag[id][grade]
 				row.Visible = count > 0
 				return `x{count}, {Format.Number(price)} Stones each`,
 					`+{Format.Number(count * price)} Stones`,

@@ -81,7 +81,7 @@ function HudController.Init()
 		local state = Ui.State()
 		stageLabel.Text = Formulas.StageName(state.Stage)
 		stonesLabel.Text = `{Config.Names.SpiritStones}: {Format.Number(state.SpiritStones)}`
-		coresLabel.Text = `{Config.Names.BeastCores}: {state.BeastCores}/{Formulas.CoreCap(state)}`
+		coresLabel.Text = `Pockets: {state.BeastCores}/{Formulas.CoreCap(state)}`
 
 		local nextQi = Formulas.NextStageQi(state.Stage)
 		local progress = 1

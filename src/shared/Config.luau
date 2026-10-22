@@ -11,6 +11,7 @@ Config.Names = {
 	Qi = "Qi",
 	SpiritStones = "Spirit Stones",
 	BeastCores = "Beast Cores",
+	Backpack = "Backpack",
 }
 
 --------------------------------------------------------------------------
@@ -235,6 +236,14 @@ Config.Loot = {
 	CoreHoldDuration = 0.5, -- seconds to hold the pickup key
 	CoreCap = 5, -- cores a player can carry before upgrades
 }
+
+--------------------------------------------------------------------------
+-- Safe zone and backpack. Standing inside any part tagged "SafeZone" (a big
+-- see-through box around spawn) moves everything in the player's pockets into
+-- their backpack, which has no cap. Selling and the alchemy furnace only use the backpack.
+--------------------------------------------------------------------------
+Config.SafeZoneTag = "SafeZone"
+Config.SafeZoneHeight = 20 -- studs above a zone part's top that still count as inside
 
 --------------------------------------------------------------------------
 -- Shops. Any part tagged "ShopPad" with a text attribute "Shop" set to

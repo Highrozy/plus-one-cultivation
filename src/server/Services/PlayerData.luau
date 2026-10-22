@@ -12,8 +12,10 @@ export type Data = {
 	Qi: number, -- total qi ever gathered (stage requirements are totals)
 	Stage: number, -- 1 = Qi Condensation 1
 	SpiritStones: number,
-	BeastCores: number, -- total carried, all types and grades (always the sum of Cores)
-	Cores: { [string]: { [number]: number } }, -- core id -> grade index -> count
+	BeastCores: number, -- total in pockets, all types and grades (always the sum of Cores)
+	Cores: { [string]: { [number]: number } }, -- pockets: core id -> grade index -> count
+	BagCores: number, -- total in the backpack (always the sum of Bag)
+	Bag: { [string]: { [number]: number } }, -- backpack (no cap): core id -> grade index -> count
 	Manuals: { [string]: boolean }, -- owned manual ids
 	Upgrades: { [string]: number }, -- upgrade id -> level
 	Rebirths: number,
@@ -38,6 +40,7 @@ function PlayerData.Sync(player: Player)
 	player:SetAttribute("Stage", data.Stage)
 	player:SetAttribute("SpiritStones", data.SpiritStones)
 	player:SetAttribute("BeastCores", data.BeastCores)
+	player:SetAttribute("BagCores", data.BagCores)
 	player:SetAttribute("Rebirths", data.Rebirths)
 	player:SetAttribute("RebirthBonus", data.RebirthBonus)
 	-- Manuals show up as "Manual_<id>" = true, upgrades as "Upgrade_<id>" = level.
@@ -47,21 +50,46 @@ function PlayerData.Sync(player: Player)
 	for id in Config.Upgrades do
 		player:SetAttribute(`Upgrade_{id}`, data.Upgrades[id] or 0)
 	end
-	-- Cores show up as "Core_<id>_<grade index>" = count.
+	-- Cores show up as "Core_<id>_<grade index>" = count (pockets)
+	-- and "Bag_<id>_<grade index>" = count (backpack).
 	for id in Config.Cores do
 		local grades = data.Cores[id] or {}
+		local bagGrades = data.Bag[id] or {}
 		for grade in Config.CoreGrades do
 			player:SetAttribute(`Core_{id}_{grade}`, grades[grade] or 0)
+			player:SetAttribute(`Bag_{id}_{grade}`, bagGrades[grade] or 0)
 		end
 	end
 end
 
--- Add (or remove, with a negative amount) cores of one type and grade.
+-- Add (or remove, with a negative amount) cores of one type and grade to the pockets.
 function PlayerData.AddCores(data: Data, id: string, grade: number, amount: number)
 	local grades = data.Cores[id] or {}
 	data.Cores[id] = grades
 	grades[grade] = (grades[grade] or 0) + amount
 	data.BeastCores += amount
+end
+
+-- Same, for the backpack.
+function PlayerData.AddBagCores(data: Data, id: string, grade: number, amount: number)
+	local grades = data.Bag[id] or {}
+	data.Bag[id] = grades
+	grades[grade] = (grades[grade] or 0) + amount
+	data.BagCores += amount
+end
+
+-- Move everything in the pockets into the backpack. Returns how many cores moved.
+function PlayerData.EmptyPockets(data: Data): number
+	local moved = data.BeastCores
+	for id, grades in data.Cores do
+		for grade, count in grades do
+			if count > 0 then
+				PlayerData.AddBagCores(data, id, grade, count)
+				PlayerData.AddCores(data, id, grade, -count)
+			end
+		end
+	end
+	return moved
 end
 
 function PlayerData.Reset(player: Player)
@@ -71,6 +99,8 @@ function PlayerData.Reset(player: Player)
 		SpiritStones = 0,
 		BeastCores = 0,
 		Cores = {},
+		BagCores = 0,
+		Bag = {},
 		Manuals = {},
 		Upgrades = {},
 		Rebirths = 0,

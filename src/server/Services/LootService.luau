@@ -66,7 +66,7 @@ local function dropCore(owner: Player, coreId: string, grade: number, ground: Ve
 			return
 		end
 		if data.BeastCores >= Formulas.CoreCap(data) then
-			Remotes.Get("Notify"):FireClient(player, "Pockets full! Sell cores at the Manual Shop.")
+			Remotes.Get("Notify"):FireClient(player, "Pockets full! Go back to the safe zone to store them.")
 			return
 		end
 		PlayerData.AddCores(data, coreId, grade, 1)

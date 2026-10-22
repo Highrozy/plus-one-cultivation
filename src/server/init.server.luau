@@ -8,6 +8,7 @@ local ORDER = {
 	"PlayerData",
 	"RealmService",
 	"LootService",
+	"SafeZoneService",
 	"BeastService",
 	"TrainingService",
 	"CombatService",

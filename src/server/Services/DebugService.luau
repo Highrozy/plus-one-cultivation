@@ -46,6 +46,14 @@ local COMMANDS: { [string]: (Player, PlayerData.Data, any) -> () } = {
 		data.Rebirths += 1
 		PlayerData.Sync(player)
 	end,
+	-- Put 5 random cores (rolled like real drops, any zone's type) into the pockets, ignoring the cap.
+	AddCores = function(player, data)
+		for _ = 1, 5 do
+			local id = Config.CoreOrder[math.random(#Config.CoreOrder)]
+			PlayerData.AddCores(data, id, Formulas.RollGrade(Formulas.Luck(data)), 1)
+		end
+		PlayerData.Sync(player)
+	end,
 	Reset = function(player)
 		PlayerData.Reset(player)
 	end,

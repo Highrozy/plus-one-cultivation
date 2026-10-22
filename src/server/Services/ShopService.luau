@@ -56,23 +56,24 @@ local ACTIONS: { [string]: { Shop: string, Run: (Player, PlayerData.Data, any) -
 			notify:FireClient(player, `Learned {info.Name}`)
 		end,
 	},
+	-- Sells from the backpack only (pockets are emptied into it at a safe zone).
 	-- which: "All" sells every core, or { Core = id, Grade = n } sells all cores of that type and grade
 	SellCores = {
 		Shop = "Manuals",
 		Run = function(player, data, which)
 			local earned = 0
-			for id, grades in data.Cores do
+			for id, grades in data.Bag do
 				for grade, count in grades do
 					local picked = which == "All"
 						or typeof(which) == "table" and which.Core == id and which.Grade == grade
 					if picked and count > 0 then
 						earned += count * Formulas.CoreSellPrice(id, grade)
-						PlayerData.AddCores(data, id, grade, -count)
+						PlayerData.AddBagCores(data, id, grade, -count)
 					end
 				end
 			end
 			if earned == 0 then
-				notify:FireClient(player, `No {Config.Names.BeastCores} to sell`)
+				notify:FireClient(player, `No {Config.Names.BeastCores} in your {Config.Names.Backpack}`)
 				return
 			end
 			data.SpiritStones += earned

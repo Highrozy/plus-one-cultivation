@@ -95,10 +95,13 @@ function Ui.State()
 		upgrades[id] = player:GetAttribute(`Upgrade_{id}`) or 0
 	end
 	local cores = {}
+	local bag = {}
 	for id in Config.Cores do
 		cores[id] = {}
+		bag[id] = {}
 		for grade in Config.CoreGrades do
 			cores[id][grade] = player:GetAttribute(`Core_{id}_{grade}`) or 0
+			bag[id][grade] = player:GetAttribute(`Bag_{id}_{grade}`) or 0
 		end
 	end
 	return {
@@ -107,6 +110,8 @@ function Ui.State()
 		SpiritStones = player:GetAttribute("SpiritStones") or 0,
 		BeastCores = player:GetAttribute("BeastCores") or 0,
 		Cores = cores,
+		BagCores = player:GetAttribute("BagCores") or 0,
+		Bag = bag,
 		Manuals = manuals,
 		Upgrades = upgrades,
 		Rebirths = player:GetAttribute("Rebirths") or 0,

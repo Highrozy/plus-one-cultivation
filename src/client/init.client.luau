@@ -10,6 +10,7 @@ local ORDER = {
 	"HudController",
 	"BreakthroughController",
 	"ShopController",
+	"BackpackController",
 	"RebirthController",
 	"CorePickupController",
 	"NotifyController",
